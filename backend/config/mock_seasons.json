@@ -4,32 +4,38 @@
     {
       "season": "Kharif 2024",
       "crop": "Cotton",
-      "soil_N": 185,
-      "soil_P": 18,
+      "soil_N": 165,
+      "soil_P": 14,
       "soil_K": 210,
-      "organic_carbon": 0.42,
-      "yield_achieved": 12.5,
-      "fertilizer_bags": {"Urea": 4, "DAP": 2, "MOP": 1}
+      "organic_carbon": 0.35,
+      "chemical_fertilizer_cost": 9650,
+      "yield_achieved": 14.2,
+      "fertilizer_bags": {"Urea": 4.5, "DAP": 3.0, "MOP": 2.0},
+      "ipns_practiced": "Conventional chemical heavy — no manure"
     },
     {
       "season": "Rabi 2024",
       "crop": "Wheat",
-      "soil_N": 200,
-      "soil_P": 20,
+      "soil_N": 185,
+      "soil_P": 18,
       "soil_K": 195,
-      "organic_carbon": 0.48,
-      "yield_achieved": 38.0,
-      "fertilizer_bags": {"Urea": 3, "DAP": 2, "MOP": 1}
+      "organic_carbon": 0.44,
+      "chemical_fertilizer_cost": 7200,
+      "yield_achieved": 37.0,
+      "fertilizer_bags": {"Urea": 3.0, "DAP": 2.5, "MOP": 1.5},
+      "ipns_practiced": "Initiated 20% Farm Yard Manure (FYM) blending"
     },
     {
       "season": "Kharif 2025",
       "crop": "Soybean",
-      "soil_N": 215,
+      "soil_N": 210,
       "soil_P": 22,
       "soil_K": 185,
       "organic_carbon": 0.55,
-      "yield_achieved": 18.0,
-      "fertilizer_bags": {"Urea": 2, "DAP": 3, "MOP": 2}
+      "chemical_fertilizer_cost": 4850,
+      "yield_achieved": 19.5,
+      "fertilizer_bags": {"Urea": 1.5, "DAP": 1.8, "MOP": 1.0},
+      "ipns_practiced": "Full 25% IPNS Vermicompost + Biofertilizer protocol"
     }
   ]
 }

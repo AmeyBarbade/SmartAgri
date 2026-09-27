@@ -4,6 +4,7 @@ Author: Amey Barbade
 
 Orchestrates:  STCR → ML fallback → bag conversion → cost → weather → IPNS
 """
+import math
 from .stcr import calculate_stcr_dose
 from .ml_layer import predict_ml_dose
 from .weather import get_weather_data
@@ -42,8 +43,18 @@ def check_micronutrients(soil_data: dict):
     return shortfall
 
 
+def format_bag_qty(bags: float, kg: float = None) -> str:
+    """Formats bag quantity cleanly for display."""
+    if bags <= 0:
+        return "0 bags"
+    bag_str = f"{int(bags)} bags" if bags.is_integer() else f"{bags:.2f} bags"
+    if kg is not None and kg > 0:
+        return f"{bag_str} ({kg:.1f} kg)"
+    return bag_str
+
+
 def generate_schedule(bags: dict):
-    """Build a schedule using commercial bag quantities."""
+    """Build a split application schedule with precise dynamic acreage scaling."""
     schedule = []
     urea = bags["urea"]
     dap  = bags["dap"]
@@ -51,32 +62,40 @@ def generate_schedule(bags: dict):
 
     has_basal = (urea["bags"] > 0 or dap["bags"] > 0 or mop["bags"] > 0)
 
+    # Split Urea and MOP 50% Basal / 50% Top Dressing
+    urea_basal = round(urea["bags"] * 0.5, 2)
+    urea_top   = round(urea["bags"] - urea_basal, 2)
+    urea_basal_kg = round(urea["kg"] * 0.5, 1)
+    urea_top_kg   = round(urea["kg"] - urea_basal_kg, 1)
+
+    mop_basal = round(mop["bags"] * 0.5, 2)
+    mop_top   = round(mop["bags"] - mop_basal, 2)
+    mop_basal_kg = round(mop["kg"] * 0.5, 1)
+    mop_top_kg   = round(mop["kg"] - mop_basal_kg, 1)
+
     if has_basal:
-        # Basal: all DAP, half Urea, half MOP
         schedule.append({
             "stage": "Basal Dose (Sowing)",
             "fertilizer": "DAP + Urea + MOP",
             "quantity": {
-                "DAP": f"{dap['bags']} bags ({dap['kg']} kg)",
-                "Urea": f"{math.ceil(urea['bags']/2)} bags",
-                "MOP": f"{math.ceil(mop['bags']/2)} bags"
+                "DAP": format_bag_qty(dap["bags"], dap["kg"]),
+                "Urea": format_bag_qty(urea_basal, urea_basal_kg),
+                "MOP": format_bag_qty(mop_basal, mop_basal_kg)
             },
-            "timing_note": "Apply DAP in full at sowing. Split Urea and MOP."
+            "timing_note": "Apply all DAP plus 50% Urea and 50% MOP evenly at sowing time."
         })
-    if urea["bags"] > 0 or mop["bags"] > 0:
+    if urea_top > 0 or mop_top > 0:
         schedule.append({
             "stage": "Top Dressing (30–45 days)",
             "fertilizer": "Urea + MOP",
             "quantity": {
-                "Urea": f"{urea['bags'] - math.ceil(urea['bags']/2)} bags",
-                "MOP": f"{mop['bags'] - math.ceil(mop['bags']/2)} bags"
+                "Urea": format_bag_qty(urea_top, urea_top_kg),
+                "MOP": format_bag_qty(mop_top, mop_top_kg)
             },
-            "timing_note": "Apply before irrigation or light rainfall."
+            "timing_note": "Apply remaining Urea and MOP before irrigation or light rainfall."
         })
     return schedule
 
-
-import math
 
 def get_recommendation(
     crop_type: str,
@@ -111,8 +130,8 @@ def get_recommendation(
     ha = land_size_acres * 0.4047
     scaled_doses = {k: round(v * ha, 2) for k, v in base_doses.items()}
 
-    # 3. Commercial bag conversion
-    commercial_bags = convert_to_bags(scaled_doses)
+    # 3. Commercial bag conversion with dynamic acreage scaling
+    commercial_bags = convert_to_bags(scaled_doses, land_size_acres=land_size_acres)
 
     # 4. Cost
     cost_comp = calculate_cost(commercial_bags, previous_usage)
@@ -120,7 +139,7 @@ def get_recommendation(
     # 5. Micronutrient shortfall
     micro_shortfall = check_micronutrients(soil_data)
 
-    # 6. Schedule (now uses bags, not raw kg)
+    # 6. Schedule (now uses proportional bags with dynamic split)
     schedule = generate_schedule(commercial_bags)
 
     # 7. Explainability
