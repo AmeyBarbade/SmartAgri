@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_URL = "http://127.0.0.1:8000/recommend"
+API_URL = "http://127.0.0.1:8001/recommend"
 
 st.set_page_config(page_title="Sustainable Fertilizer Optimizer", layout="wide")
 
