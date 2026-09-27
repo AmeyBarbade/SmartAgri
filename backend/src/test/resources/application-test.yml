@@ -1,0 +1,12 @@
+# Integration tests: isolated in-memory H2 (MySQL mode), same Flyway migrations as dev/mysql.
+spring:
+  datasource:
+    url: jdbc:h2:mem:agrioptima-test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+app:
+  jwt:
+    secret: dGVzdC1vbmx5LWFncmlvcHRpbWEtand0LXNlY3JldC1rZXktZm9yLWludGVncmF0aW9uLXRlc3Rz
+    expiration-minutes: 60
