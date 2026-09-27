@@ -1,0 +1,35 @@
+{
+  "farmer": "Demo Farm — Amravati, Maharashtra",
+  "seasons": [
+    {
+      "season": "Kharif 2024",
+      "crop": "Cotton",
+      "soil_N": 185,
+      "soil_P": 18,
+      "soil_K": 210,
+      "organic_carbon": 0.42,
+      "yield_achieved": 12.5,
+      "fertilizer_bags": {"Urea": 4, "DAP": 2, "MOP": 1}
+    },
+    {
+      "season": "Rabi 2024",
+      "crop": "Wheat",
+      "soil_N": 200,
+      "soil_P": 20,
+      "soil_K": 195,
+      "organic_carbon": 0.48,
+      "yield_achieved": 38.0,
+      "fertilizer_bags": {"Urea": 3, "DAP": 2, "MOP": 1}
+    },
+    {
+      "season": "Kharif 2025",
+      "crop": "Soybean",
+      "soil_N": 215,
+      "soil_P": 22,
+      "soil_K": 185,
+      "organic_carbon": 0.55,
+      "yield_achieved": 18.0,
+      "fertilizer_bags": {"Urea": 2, "DAP": 3, "MOP": 2}
+    }
+  ]
+}

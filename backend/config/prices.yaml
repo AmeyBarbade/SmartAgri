@@ -1,7 +1,20 @@
-# Fertilizer prices per kg (in INR or local currency)
-# Editable, not hardcoded in logic
-fertilizers:
-  Urea: 5.9  # e.g., subsidized price
-  DAP: 24.0
-  MOP: 17.0
-  SSP: 8.0
+# 2026 Government of India subsidized Maximum Retail Prices (MRP)
+# Prices are PER BAG, not per kg.
+
+bags:
+  Urea:
+    price_per_bag: 242      # ₹ per 45 kg bag
+    bag_weight_kg: 45
+    composition:             # nutrient content fractions
+      N: 0.46
+  DAP:
+    price_per_bag: 1350     # ₹ per 50 kg bag
+    bag_weight_kg: 50
+    composition:
+      N: 0.18
+      P2O5: 0.46
+  MOP:
+    price_per_bag: 1710     # ₹ per 50 kg bag
+    bag_weight_kg: 50
+    composition:
+      K2O: 0.60

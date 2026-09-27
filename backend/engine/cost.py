@@ -1,3 +1,10 @@
+"""
+Cost Economics Module
+Author: Amey Barbade
+
+Calculates bag-based cost for recommended fertilizer plan vs. farmer's
+current usage, using 2026 GoI subsidized MRP per bag.
+"""
 import yaml
 from pathlib import Path
 import logging
@@ -10,29 +17,26 @@ def load_prices():
     with open(CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
 
-def calculate_cost(doses: dict, current_usage: dict = None):
-    prices = load_prices().get("fertilizers", {})
-    
-    # We map NPK doses roughly to Urea, DAP, MOP for cost estimation
-    # 1 kg N ~ 2.17 kg Urea (46% N)
-    # 1 kg P ~ 2.17 kg DAP (46% P)
-    # 1 kg K ~ 1.66 kg MOP (60% K)
-    
-    recommended_cost = 0
-    urea_needed = (doses.get("N", 0) / 0.46)
-    dap_needed = (doses.get("P", 0) / 0.46)
-    mop_needed = (doses.get("K", 0) / 0.60)
-    
-    recommended_cost += urea_needed * prices.get("Urea", 0)
-    recommended_cost += dap_needed * prices.get("DAP", 0)
-    recommended_cost += mop_needed * prices.get("MOP", 0)
-    
-    current_cost = 0
+def calculate_cost(commercial_bags: dict, current_usage: dict = None):
+    """
+    Parameters
+    ----------
+    commercial_bags : dict
+        Output of bag_converter.convert_to_bags() — contains per-product
+        bag counts and costs plus total_cost.
+    current_usage : dict | None
+        Farmer's previous usage in bags: {Urea: n, DAP: n, MOP: n}
+    """
+    cfg = load_prices()["bags"]
+
+    recommended_cost = commercial_bags["total_cost"]
+
+    current_cost = 0.0
     if current_usage:
-        current_cost += current_usage.get("Urea", 0) * prices.get("Urea", 0)
-        current_cost += current_usage.get("DAP", 0) * prices.get("DAP", 0)
-        current_cost += current_usage.get("MOP", 0) * prices.get("MOP", 0)
-        
+        current_cost += current_usage.get("Urea", 0) * cfg["Urea"]["price_per_bag"]
+        current_cost += current_usage.get("DAP", 0)  * cfg["DAP"]["price_per_bag"]
+        current_cost += current_usage.get("MOP", 0)  * cfg["MOP"]["price_per_bag"]
+
     return {
         "recommended_cost": round(recommended_cost, 2),
         "current_usage_cost": round(current_cost, 2) if current_usage else 0.0,

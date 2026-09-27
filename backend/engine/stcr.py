@@ -2,7 +2,14 @@ import yaml
 import logging
 from pathlib import Path
 
-# Setup logging
+# ── STCR Rule Engine ──
+# Author: Amey Barbade
+# Implements ICAR Soil Test Crop Response (Targeted Yield) equations.
+# Equation form:  F = (a * T) - (b * S)
+#   T = target yield (q/ha)
+#   S = soil test value (kg/ha)
+# Output keys: N, P2O5, K2O  (oxide form, matching commercial fertilizer specs)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -16,8 +23,10 @@ STCR_CONFIG = load_stcr_config()
 
 def calculate_stcr_dose(crop_type: str, target_yield: float, soil_data: dict):
     """
-    Calculate fertilizer dose using STCR equation:
-    dose = (a * target_yield) - (b * soil_test_value)
+    Calculate fertilizer dose using STCR equation.
+
+    Returns dict with keys {N, P2O5, K2O} in kg, or None if no
+    coefficients are available (triggers ML fallback).
     """
     crop_type = crop_type.lower()
     crop_config = STCR_CONFIG.get("crops", {}).get(crop_type)
@@ -25,23 +34,38 @@ def calculate_stcr_dose(crop_type: str, target_yield: float, soil_data: dict):
     if not crop_config:
         logger.warning(f"STCR rules not found for crop: {crop_type}. Yielding to ML fallback.")
         return None
-    
+
     if crop_config.get("status") == "coefficients pending":
-        # TODO: Phase 2 will provide real ICAR coefficients. DO NOT INVENT plausible numbers.
-        logger.warning(f"LOUD WARNING: {crop_type} has no verified coefficients loaded. Yielding to ML fallback.")
+        logger.warning(
+            f"LOUD WARNING: {crop_type} has no verified coefficients loaded. "
+            "Yielding to ML fallback."
+        )
         return None
 
-    logger.info(f"Using STCR stubbed coefficients for {crop_type}")
-    
+    status = crop_config.get("status", "unknown")
+    source = crop_config.get("source", "unknown")
+    if status == "stubbed":
+        logger.info(f"Using STUBBED coefficients for {crop_type} (not verified)")
+    else:
+        logger.info(f"Using VERIFIED ICAR coefficients for {crop_type} [{source}]")
+
+    # Map nutrient keys to the soil_data keys they draw from
+    nutrient_soil_map = {
+        "N":    "N",
+        "P2O5": "P",   # soil test reports elemental P (kg/ha)
+        "K2O":  "K",   # soil test reports elemental K (kg/ha)
+    }
+
     doses = {}
-    for nutrient in ["N", "P", "K"]:
-        if nutrient in crop_config:
-            a = crop_config[nutrient]["a"]
-            b = crop_config[nutrient]["b"]
-            soil_test_value = soil_data.get(nutrient, 0)
-            
-            # STCR equation
+    for nutrient_key in ["N", "P2O5", "K2O"]:
+        coeff = crop_config.get(nutrient_key)
+        if coeff:
+            a = coeff["a"]
+            b = coeff["b"]
+            soil_key = nutrient_soil_map[nutrient_key]
+            soil_test_value = soil_data.get(soil_key, 0)
+
             dose = (a * target_yield) - (b * soil_test_value)
-            doses[nutrient] = max(0.0, round(dose, 2))  # no negative dose
-    
+            doses[nutrient_key] = max(0.0, round(dose, 2))
+
     return doses

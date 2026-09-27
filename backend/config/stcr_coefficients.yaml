@@ -1,18 +1,45 @@
-# STCR Coefficients (Phase 1)
-# DO NOT INVENT coefficients for real crops until Phase 2.
-# Structure: dose = (a * target_yield) - (b * soil_test_value)
+# STCR Coefficients — Targeted Yield Approach
+# Equation: F = (a * T) - (b * S)
+#   T = Target Yield (q/ha), S = Soil test value (kg/ha)
+#
+# "output_form" indicates what the coefficients produce:
+#   "N_P2O5_K2O" → real ICAR equations (P as P2O5, K as K2O)
+#   "N_P_K"      → legacy stubbed elemental values
+
 crops:
+  # ── Real verified ICAR coefficients (Vertisols / black soils) ──
+  cotton:
+    status: "verified"
+    source: "ICAR STCR — Vertisols"
+    output_form: "N_P2O5_K2O"
+    N:    { a: 9.53, b: 0.38 }
+    P2O5: { a: 6.26, b: 2.66 }
+    K2O:  { a: 3.89, b: 0.07 }
+
+  soybean:
+    status: "verified"
+    source: "ICAR STCR — Vertisols"
+    output_form: "N_P2O5_K2O"
+    N:    { a: 6.77, b: 0.16 }
+    P2O5: { a: 1.55, b: 0.61 }
+    K2O:  { a: 5.75, b: 0.27 }
+
+  # ── Stubbed / placeholder coefficients (Phase 1 demos) ──
   wheat:
     status: "stubbed"
-    N: { a: 4.0, b: 0.6 }
-    P: { a: 3.2, b: 1.2 }
-    K: { a: 2.5, b: 0.2 }
+    source: "Placeholder — not verified"
+    output_form: "N_P2O5_K2O"
+    N:    { a: 4.0, b: 0.6 }
+    P2O5: { a: 3.2, b: 1.2 }
+    K2O:  { a: 2.5, b: 0.2 }
+
   rice:
     status: "stubbed"
-    N: { a: 4.3, b: 0.4 }
-    P: { a: 2.1, b: 1.0 }
-    K: { a: 3.5, b: 0.5 }
+    source: "Placeholder — not verified"
+    output_form: "N_P2O5_K2O"
+    N:    { a: 4.3, b: 0.4 }
+    P2O5: { a: 2.1, b: 1.0 }
+    K2O:  { a: 3.5, b: 0.5 }
+
   maize:
-    status: "coefficients pending"
-  cotton:
     status: "coefficients pending"
