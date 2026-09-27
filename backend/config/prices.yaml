@@ -1,0 +1,7 @@
+# Fertilizer prices per kg (in INR or local currency)
+# Editable, not hardcoded in logic
+fertilizers:
+  Urea: 5.9  # e.g., subsidized price
+  DAP: 24.0
+  MOP: 17.0
+  SSP: 8.0

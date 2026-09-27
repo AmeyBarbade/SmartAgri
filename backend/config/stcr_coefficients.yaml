@@ -1,0 +1,18 @@
+# STCR Coefficients (Phase 1)
+# DO NOT INVENT coefficients for real crops until Phase 2.
+# Structure: dose = (a * target_yield) - (b * soil_test_value)
+crops:
+  wheat:
+    status: "stubbed"
+    N: { a: 4.0, b: 0.6 }
+    P: { a: 3.2, b: 1.2 }
+    K: { a: 2.5, b: 0.2 }
+  rice:
+    status: "stubbed"
+    N: { a: 4.3, b: 0.4 }
+    P: { a: 2.1, b: 1.0 }
+    K: { a: 3.5, b: 0.5 }
+  maize:
+    status: "coefficients pending"
+  cotton:
+    status: "coefficients pending"
