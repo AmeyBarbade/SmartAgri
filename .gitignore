@@ -1,0 +1,38 @@
+# Local toolchains
+.tools/
+
+# Environment
+.env
+*.local
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Java / Maven
+backend/target/
+backend/data/
+*.class
+hs_err_pid*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+frontend/dist/
+npm-debug.log*
+
+# Data (large raw downloads are fetched by scripts/)
+data/raw/*
+!data/raw/README.md
+
+# Logs
+*.log
