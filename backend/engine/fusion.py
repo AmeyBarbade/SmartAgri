@@ -1,6 +1,5 @@
 """
 Fusion & Optimizer Layer
-Author: Amey Barbade
 
 Orchestrates:  STCR → ML fallback → bag conversion → cost → weather → IPNS
 """

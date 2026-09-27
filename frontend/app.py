@@ -1,7 +1,6 @@
 """
 SmartAgri — Sustainable Fertilizer Usage Optimizer
 Frontend Dashboard (Streamlit)
-Author: Amey Barbade
 Phase 5: Dynamic Scaling, PDF Export & Multi-Season Trends
 """
 import sys
@@ -75,8 +74,7 @@ st.markdown(
     "<h1 style='text-align:center; color:#2D2D2D;'>"
     "🌱 SmartAgri — Sustainable Fertilizer Optimizer</h1>"
     "<p style='text-align:center; font-size:1.05rem; color:#777;'>"
-    "PSAI01 &nbsp;·&nbsp; Hybrid STCR + ML Recommendation Engine &nbsp;·&nbsp; Phase 5 Dynamic GIS Scaling & Export</p>"
-    "<p class='author-badge'>Developed by <strong>Amey Barbade</strong></p>",
+    "PSAI01 &nbsp;·&nbsp; Hybrid STCR + ML Recommendation Engine &nbsp;·&nbsp; Phase 5 Dynamic GIS Scaling & Export</p>",
     unsafe_allow_html=True
 )
 
@@ -654,6 +652,6 @@ with tab_settings:
 st.markdown(
     "<hr style='margin-top:40px;'>"
     "<p style='text-align:center; color:#AAA; font-size:.78rem;'>"
-    "SmartAgri PSAI01 &nbsp;·&nbsp; Built by Amey Barbade &nbsp;·&nbsp; "
+    "SmartAgri PSAI01 &nbsp;·&nbsp; "
     "Hybrid STCR + ML Engine &nbsp;·&nbsp; Phase 5 Dynamic GIS Scaling & PDF Export</p>",
     unsafe_allow_html=True)

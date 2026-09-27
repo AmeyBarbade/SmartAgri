@@ -1,6 +1,5 @@
 """
 PDF Prescription Generator
-Author: Amey Barbade
 
 Generates a clean, 1-page PDF soil prescription and fertilizer schedule
 in-memory using fpdf2.
@@ -49,7 +48,7 @@ class AgritechPDF(FPDF):
         self.set_y(-12)
         self.set_font("Helvetica", "I", 8)
         self.set_text_color(120, 120, 120)
-        self.cell(0, 8, sanitize_text("Generated via PSAI01 Hybrid STCR Engine | Author: Amey Barbade"), align="C")
+        self.cell(0, 8, sanitize_text("Generated via PSAI01 Hybrid STCR Engine | SmartAgri Platform"), align="C")
 
 
 def create_prescription_pdf(

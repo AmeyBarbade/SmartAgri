@@ -1,6 +1,5 @@
 """
 Cost Economics Module
-Author: Amey Barbade
 
 Calculates bag-based cost for recommended fertilizer plan vs. farmer's
 current usage, using 2026 GoI subsidized MRP per bag.

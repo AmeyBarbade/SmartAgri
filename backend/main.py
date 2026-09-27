@@ -1,6 +1,5 @@
 """
 FastAPI Server for SmartAgri
-Author: Amey Barbade
 """
 
 from fastapi import FastAPI, Query

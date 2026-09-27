@@ -1,6 +1,5 @@
 """
 Commercial Fertilizer Bag Converter
-Author: Amey Barbade
 
 Converts raw elemental/oxide nutrient requirements (N, P2O5, K2O in kg)
 into physical commercial fertilizer bags that a farmer can actually buy.

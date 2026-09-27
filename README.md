@@ -1,5 +1,4 @@
 # SmartAgri — Sustainable Fertilizer Usage Optimizer (PSAI01)
-**Author & Developer:** Amey Barbade  
 **Category:** AI / ML / Agritech Decision Support  
 
 ---

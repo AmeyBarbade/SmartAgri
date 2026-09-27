@@ -1,6 +1,5 @@
 """
 GIS & Satellite SoilGrids Integration
-Author: Amey Barbade
 
 Handles:
 1. Polygon geometry parsing, EPSG:6933 equal-area projection, and acreage calculation.

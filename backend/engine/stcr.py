@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 # ── STCR Rule Engine ──
-# Author: Amey Barbade
 # Implements ICAR Soil Test Crop Response (Targeted Yield) equations.
 # Equation form:  F = (a * T) - (b * S)
 #   T = target yield (q/ha)
