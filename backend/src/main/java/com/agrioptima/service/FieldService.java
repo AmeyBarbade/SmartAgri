@@ -95,5 +95,8 @@ public class FieldService {
         field.setSeason(r.season());
         field.setSowingDate(r.sowingDate());
         field.setPreviousCrop(blankToNull(r.previousCrop()));
+        field.setBoundaryGeojson(r.boundaryGeojson());
+        field.setCentroidLat(r.centroidLat());
+        field.setCentroidLon(r.centroidLon());
     }
 }

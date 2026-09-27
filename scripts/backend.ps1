@@ -8,10 +8,15 @@ param([ValidateSet('run', 'test', 'build')][string]$Task = 'run')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $jdk = Get-ChildItem -Directory (Join-Path $root '.tools') -Filter 'jdk-21*' -ErrorAction SilentlyContinue | Select-Object -First 1
-if (-not $jdk) { throw "JDK 21 not found in .tools/. See README 'Local setup'." }
-
-$env:JAVA_HOME = $jdk.FullName
-$env:Path = "$($jdk.FullName)\bin;$env:Path"
+if ($jdk) {
+    $env:JAVA_HOME = $jdk.FullName
+    $env:Path = "$($jdk.FullName)\bin;$env:Path"
+} else {
+    $javaCmd = Get-Command java -ErrorAction SilentlyContinue
+    if (-not $javaCmd) {
+        throw "JDK 21+ not found in .tools/ or on PATH. See README 'Local setup'."
+    }
+}
 
 Push-Location (Join-Path $root 'backend')
 try {

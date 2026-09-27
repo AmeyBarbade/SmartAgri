@@ -76,4 +76,22 @@ describe('recommendation view', () => {
     expect(screen.getByText('Urea capped at 500 kg/ha')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Recommended plan' })).not.toBeInTheDocument()
   })
+
+  it('renders confidence badge, soil deficiency explainability chart, and over-fertilization impact alert', () => {
+    render(<RecommendationView rec={threePlans} />)
+
+    // 1. Confidence badge
+    expect(screen.getByText(/High Confidence — ICAR STCR Grounded/i)).toBeInTheDocument()
+
+    // 2. Soil Deficiency Explainability Chart
+    expect(screen.getByText(/Soil Health vs. Agronomic Critical Benchmarks/i)).toBeInTheDocument()
+    expect(screen.getByText(/ICAR Medium Range: 280 – 560 kg\/ha/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/ADEQUATE \(Maintenance Dose\)/i)).toHaveLength(3)
+
+    // 3. Over-fertilization / Soil degradation impact alert
+    expect(screen.getByRole('heading', { name: /Over-Fertilization & Soil Degradation Impact Analysis/i })).toBeInTheDocument()
+    expect(screen.getAllByText(/Soil Acidification/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Nitrate Leaching/i)).toBeInTheDocument()
+    expect(screen.getByText(/Biological Degradation/i)).toBeInTheDocument()
+  })
 })

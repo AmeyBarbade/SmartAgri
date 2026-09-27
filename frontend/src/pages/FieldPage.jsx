@@ -1,4 +1,4 @@
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Sparkles, Sprout } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toApiError } from '../api/client'
@@ -18,6 +18,7 @@ import {
 import { fmt, fmtDate, fmtDateTime, strategyLabel, titleCase } from '../format'
 import { useAsync } from '../useAsync'
 import SoilSection from './SoilSection'
+import FieldMap from '../components/FieldMap'
 
 async function loadField(fieldId) {
   const field = await fieldApi.get(fieldId)
@@ -37,6 +38,12 @@ export default function FieldPage() {
   if (error) return <ErrorNotice error={error} onRetry={reload} />
   const { field, farm, soilRecords, history } = data
 
+  const handleSaveBoundary = async (boundaryData) => {
+    const payload = fieldToRequest(field, boundaryData)
+    await fieldApi.update(field.id, payload)
+    reload()
+  }
+
   return (
     <>
       <PageHeader
@@ -51,15 +58,39 @@ export default function FieldPage() {
           .filter(Boolean)
           .join(' · ')}
         actions={
-          <ButtonLink variant="tertiary" to={`/history?field=${field.id}`}>
-            View history
-          </ButtonLink>
+          <div className="flex items-center gap-2">
+            <ButtonLink variant="secondary" to={`/fields/${field.id}/sustainability`}>
+              📈 Sustainability
+            </ButtonLink>
+            <ButtonLink variant="tertiary" to={`/history?field=${field.id}`}>
+              View history
+            </ButtonLink>
+          </div>
         }
       />
       <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
-        <div className="min-w-0">
-          <CropStageSection field={field} onSaved={reload} />
-          <SoilSection field={field} soilRecords={soilRecords} onSaved={reload} />
+        <div className="min-w-0 space-y-6">
+          <FieldMap field={field} farm={farm} onSaveBoundary={handleSaveBoundary} />
+
+          {/* Cohesive Farm Context Container */}
+          <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-6 shadow-sm">
+            <div className="mb-6 border-b border-line pb-4">
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-emerald-100 p-1.5 text-emerald-800">
+                  <Sprout className="size-4.5" />
+                </span>
+                <h2 className="text-base font-bold text-slate-900">Farm Context & Soil Fertility Data</h2>
+              </div>
+              <p className="text-xs text-muted mt-1">
+                Configure crop growth stage and view lab-tested soil nutrient levels or regional satellite estimates.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <CropStageSection field={field} onSaved={reload} />
+              <SoilSection field={field} soilRecords={soilRecords} onSaved={reload} />
+            </div>
+          </div>
         </div>
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <GeneratePanel field={field} history={history} hasSoil={soilRecords.length > 0} />
@@ -200,6 +231,7 @@ const PIPELINE = ['Calculating nutrient requirement', 'Optimising fertilizer pla
 export function GeneratePanel({ field, history, hasSoil }) {
   const navigate = useNavigate()
   const ready = !!(field.crop && field.growthStage)
+  const hasBoundary = Boolean(field.boundaryGeojson)
   const [profile, setProfile] = useState('')
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState(null)
@@ -283,9 +315,43 @@ export function GeneratePanel({ field, history, hasSoil }) {
           {!hasSoil && (
             <p className="mt-4 text-xs text-warn">No soil test: medium fertility will be assumed.</p>
           )}
-          <Button variant="primary" size="lg" className="mt-5 w-full" onClick={generate} loading={generating}>
-            {generating ? 'Generating…' : 'Generate Recommendation'}
-          </Button>
+
+          {/* GIS Boundary Readiness Indicator */}
+          {hasBoundary ? (
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs font-medium text-emerald-800">
+              <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+              <span>GIS boundary mapped ({fmt(field.areaHa, 2)} ha). Field ready for fertilizer optimization.</span>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+              <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+              <span>Boundary not yet traced. Recommended to trace boundary above for exact acreage calculation.</span>
+            </div>
+          )}
+
+          {/* Elevated Large Pulsing CTA Button */}
+          <button
+            type="button"
+            onClick={generate}
+            disabled={generating}
+            className={`mt-5 w-full rounded-xl py-3.5 px-5 text-base font-bold text-white shadow-md transition-all flex items-center justify-center gap-2 ${
+              hasBoundary
+                ? 'bg-emerald-700 hover:bg-emerald-800 ring-4 ring-emerald-500/25 animate-pulse hover:animate-none scale-[1.01]'
+                : 'bg-emerald-700 hover:bg-emerald-800'
+            } ${generating ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {generating ? (
+              <>
+                <Loader2 className="size-5 animate-spin" />
+                <span>Generating…</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-5" />
+                <span>Generate Recommendation</span>
+              </>
+            )}
+          </button>
           {generating && (
             <ol className="mt-4 space-y-1.5 text-[13px] text-muted" aria-live="polite">
               {PIPELINE.map((step) => (

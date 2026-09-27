@@ -1,6 +1,8 @@
 package com.agrioptima.dto.recommendation;
 
 import com.agrioptima.dto.requirement.Amounts;
+import com.agrioptima.engine.MicronutrientCheck;
+import com.agrioptima.ml.MlContracts;
 import com.agrioptima.service.recommendation.YieldFeatureMapper;
 
 import java.math.BigDecimal;
@@ -37,11 +39,14 @@ public record RecommendationResponse(
         KnowledgeBaseRef knowledgeBase,
         String modelVersion,
         String optimizerSolver,
-        String disclaimer) {
+        String disclaimer,
+        MlContracts.WeatherInfo weather,
+        IpnsAdvisory ipns,
+        List<MicronutrientCheck.Assessment> micronutrients) {
 
     public record FieldInfo(Long id, String name, String farmName, String location, BigDecimal areaHa,
                             String soilType, String irrigationType, String season, LocalDate sowingDate,
-                            String previousCrop) {
+                            String previousCrop, BigDecimal latitude, BigDecimal longitude) {
     }
 
     public record CodeName(String code, String name) {
@@ -51,8 +56,8 @@ public record RecommendationResponse(
     }
 
     public record Soil(boolean soilTestUsed, LocalDate sampleDate, Long ageDays, BigDecimal availableNKgHa,
-                       BigDecimal availablePKgHa, BigDecimal availableKKgHa, BigDecimal ph,
-                       BigDecimal organicCarbonPct, String nClass, String pClass, String kClass) {
+                        BigDecimal availablePKgHa, BigDecimal availableKKgHa, BigDecimal ph,
+                        BigDecimal organicCarbonPct, String nClass, String pClass, String kClass) {
     }
 
     /** {@code dueNowKgHa} is exactly what the optimizer received. */
@@ -96,9 +101,16 @@ public record RecommendationResponse(
     public record KnowledgeBaseRef(String id, String version, String status) {
     }
 
+    public record IpnsAdvisory(BigDecimal chemicalNKgHa, BigDecimal organicNKgHa,
+                               BigDecimal fymKgHa, BigDecimal vermicompostKgHa,
+                               BigDecimal fymFieldKg, BigDecimal vermicompostFieldKg,
+                               String note) {
+    }
+
     public RecommendationResponse withIdentity(Long id, LocalDateTime createdAt) {
         return new RecommendationResponse(id, createdAt, status, feasible, infeasibilityReason, field, crop,
                 growthStage, soil, requirement, plans, selectedPlan, scoring, yieldPrediction, infeasibility,
-                warnings, assumptions, knowledgeBase, modelVersion, optimizerSolver, disclaimer);
+                warnings, assumptions, knowledgeBase, modelVersion, optimizerSolver, disclaimer,
+                weather, ipns, micronutrients);
     }
 }

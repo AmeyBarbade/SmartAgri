@@ -55,6 +55,15 @@ public class Field extends BaseEntity {
     @Column(name = "previous_crop", length = 100)
     private String previousCrop;
 
+    @Column(name = "boundary_geojson", columnDefinition = "LONGTEXT")
+    private String boundaryGeojson;
+
+    @Column(name = "centroid_lat", precision = 10, scale = 6)
+    private BigDecimal centroidLat;
+
+    @Column(name = "centroid_lon", precision = 10, scale = 6)
+    private BigDecimal centroidLon;
+
     protected Field() {
     }
 
@@ -136,5 +145,29 @@ public class Field extends BaseEntity {
 
     public void setPreviousCrop(String previousCrop) {
         this.previousCrop = previousCrop;
+    }
+
+    public String getBoundaryGeojson() {
+        return boundaryGeojson;
+    }
+
+    public void setBoundaryGeojson(String boundaryGeojson) {
+        this.boundaryGeojson = boundaryGeojson;
+    }
+
+    public BigDecimal getCentroidLat() {
+        return centroidLat;
+    }
+
+    public void setCentroidLat(BigDecimal centroidLat) {
+        this.centroidLat = centroidLat;
+    }
+
+    public BigDecimal getCentroidLon() {
+        return centroidLon;
+    }
+
+    public void setCentroidLon(BigDecimal centroidLon) {
+        this.centroidLon = centroidLon;
     }
 }

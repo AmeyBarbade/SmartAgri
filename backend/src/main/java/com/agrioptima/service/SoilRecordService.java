@@ -29,7 +29,8 @@ public class SoilRecordService {
     public SoilRecordResponse create(Long ownerId, Long fieldId, SoilRecordRequest r) {
         Field field = fieldService.requireOwned(ownerId, fieldId);
         SoilRecord record = new SoilRecord(field, r.sampleDate(), r.nitrogen(), r.phosphorus(), r.potassium(),
-                r.ph(), r.organicCarbon(), r.moisture(), blankToNull(r.notes()));
+                r.ph(), r.organicCarbon(), r.moisture(), r.sulfur(), r.zinc(), r.iron(), r.copper(),
+                r.manganese(), r.boron(), r.ec(), blankToNull(r.notes()));
         return SoilRecordResponse.from(soilRecordRepository.save(record));
     }
 

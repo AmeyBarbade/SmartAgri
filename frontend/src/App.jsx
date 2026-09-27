@@ -8,6 +8,8 @@ import HistoryPage from './pages/HistoryPage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RecommendationPage from './pages/RecommendationPage'
+import SustainabilityPage from './pages/SustainabilityPage'
+import GisMapPage from './pages/GisMapPage'
 
 export default function App() {
   return (
@@ -22,9 +24,11 @@ export default function App() {
           }
         >
           <Route index element={<DashboardPage />} />
+          <Route path="map" element={<GisMapPage />} />
           <Route path="farms" element={<FarmsPage />} />
           <Route path="farms/:farmId" element={<FarmsPage />} />
           <Route path="fields/:fieldId" element={<FieldPage />} />
+          <Route path="fields/:fieldId/sustainability" element={<SustainabilityPage />} />
           <Route path="recommendations/:recommendationId" element={<RecommendationPage />} />
           <Route path="history" element={<HistoryPage />} />
           <Route path="*" element={<NotFoundPage />} />

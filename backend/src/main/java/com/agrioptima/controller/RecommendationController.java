@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,4 +59,16 @@ public class RecommendationController {
     public RecommendationResponse get(@AuthenticationPrincipal UserPrincipal me, @PathVariable Long recommendationId) {
         return service.get(me.id(), recommendationId);
     }
+
+    @GetMapping(value = "/recommendations/{recommendationId}/pdf", produces = "application/pdf")
+    @Operation(summary = "Download a printable 1-page A4 PDF prescription")
+    public ResponseEntity<byte[]> getPdf(
+            @AuthenticationPrincipal UserPrincipal me, @PathVariable Long recommendationId) {
+        byte[] pdf = service.getPdf(me.id(), recommendationId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"agrioptima_prescription_" + recommendationId + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
 }
+

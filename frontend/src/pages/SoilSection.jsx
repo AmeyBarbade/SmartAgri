@@ -1,17 +1,26 @@
 import { useState } from 'react'
 import { toApiError } from '../api/client'
-import { fieldApi, fieldToRequest } from '../api/endpoints'
+import { fieldApi, fieldToRequest, soilGridsApi } from '../api/endpoints'
 import { Button, EmptyState, ErrorNotice, FieldError, Label, Panel, Section, Stat } from '../components/ui'
 import { fmt, fmtDate, fmtFixed } from '../format'
 
-// Same sanity limits as SoilRecordRequest on the backend (data-entry checks, not agronomic thresholds).
+// Sanity limits matching SoilRecordRequest on the backend (data-entry checks, not agronomic thresholds).
 const LIMITS = {
   nitrogen: [0, 2000],
   phosphorus: [0, 1000],
   potassium: [0, 3000],
   ph: [3, 11],
   organicCarbon: [0, 20],
+  sulfur: [0, 500],
+  zinc: [0, 100],
+  iron: [0, 200],
+  copper: [0, 50],
+  manganese: [0, 200],
+  boron: [0, 50],
+  ec: [0, 50],
 }
+
+const OPTIONAL = new Set(['organicCarbon', 'sulfur', 'zinc', 'iron', 'copper', 'manganese', 'boron', 'ec'])
 
 const SOIL_TYPES = ['Sandy', 'Sandy loam', 'Loam', 'Silt loam', 'Clay loam', 'Clay', 'Black (vertisol)', 'Alluvial']
 
@@ -54,6 +63,13 @@ export default function SoilSection({ field, soilRecords, onSaved }) {
             <Stat label="Soil type">{field.soilType ?? 'Not recorded'}</Stat>
             <Stat label="Sample date">{fmtDate(latest.sampleDate)}</Stat>
             <Stat label="Tests on record">{soilRecords.length}</Stat>
+            {latest.sulfur != null && <Stat label="Sulfur (S)">{fmt(latest.sulfur)} ppm</Stat>}
+            {latest.zinc != null && <Stat label="Zinc (Zn)">{fmt(latest.zinc)} ppm</Stat>}
+            {latest.iron != null && <Stat label="Iron (Fe)">{fmt(latest.iron)} ppm</Stat>}
+            {latest.copper != null && <Stat label="Copper (Cu)">{fmt(latest.copper)} ppm</Stat>}
+            {latest.manganese != null && <Stat label="Manganese (Mn)">{fmt(latest.manganese)} ppm</Stat>}
+            {latest.boron != null && <Stat label="Boron (B)">{fmt(latest.boron)} ppm</Stat>}
+            {latest.ec != null && <Stat label="EC">{fmt(latest.ec)} dS/m</Stat>}
           </dl>
         </Panel>
       ) : (
@@ -81,11 +97,41 @@ function SoilForm({ field, latest, onCancel, onSaved }) {
     potassium: latest?.potassium ?? '',
     ph: latest?.ph ?? '',
     organicCarbon: latest?.organicCarbon ?? '',
+    sulfur: latest?.sulfur ?? '',
+    zinc: latest?.zinc ?? '',
+    iron: latest?.iron ?? '',
+    copper: latest?.copper ?? '',
+    manganese: latest?.manganese ?? '',
+    boron: latest?.boron ?? '',
+    ec: latest?.ec ?? '',
     soilType: field.soilType ?? '',
   })
   const [errors, setErrors] = useState({})
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [satelliteLoading, setSatelliteLoading] = useState(false)
+  const [satelliteSource, setSatelliteSource] = useState(null)
+
+  async function onAutoFillSatellite() {
+    setSatelliteLoading(true)
+    setError(null)
+    try {
+      const lat = field.farm?.latitude ?? 25.594
+      const lon = field.farm?.longitude ?? 85.137
+      const res = await soilGridsApi.fetch(lat, lon)
+      setValues((prev) => ({
+        ...prev,
+        nitrogen: res.nitrogen_kg_ha != null ? String(res.nitrogen_kg_ha) : prev.nitrogen,
+        ph: res.ph != null ? String(res.ph) : prev.ph,
+        organicCarbon: res.organic_carbon_pct != null ? String(res.organic_carbon_pct) : prev.organicCarbon,
+      }))
+      setSatelliteSource(res.source)
+    } catch (err) {
+      setError(toApiError(err))
+    } finally {
+      setSatelliteLoading(false)
+    }
+  }
 
   const set = (k) => (e) => setValues((v) => ({ ...v, [k]: e.target.value }))
 
@@ -96,7 +142,7 @@ function SoilForm({ field, latest, onCancel, onSaved }) {
     for (const [k, [min, max]] of Object.entries(LIMITS)) {
       const raw = values[k]
       if (raw === '' || raw === null) {
-        if (k !== 'organicCarbon') e[k] = 'Required.'
+        if (!OPTIONAL.has(k)) e[k] = 'Required.'
         continue
       }
       const n = Number(raw)
@@ -113,6 +159,7 @@ function SoilForm({ field, latest, onCancel, onSaved }) {
     if (Object.keys(e).length) return
     setSaving(true)
     setError(null)
+    const numOrNull = (k) => (values[k] === '' || values[k] === null ? null : Number(values[k]))
     try {
       await fieldApi.addSoilRecord(field.id, {
         sampleDate: values.sampleDate,
@@ -120,7 +167,14 @@ function SoilForm({ field, latest, onCancel, onSaved }) {
         phosphorus: Number(values.phosphorus),
         potassium: Number(values.potassium),
         ph: Number(values.ph),
-        organicCarbon: values.organicCarbon === '' ? null : Number(values.organicCarbon),
+        organicCarbon: numOrNull('organicCarbon'),
+        sulfur: numOrNull('sulfur'),
+        zinc: numOrNull('zinc'),
+        iron: numOrNull('iron'),
+        copper: numOrNull('copper'),
+        manganese: numOrNull('manganese'),
+        boron: numOrNull('boron'),
+        ec: numOrNull('ec'),
       })
       const soilType = values.soilType.trim() || null
       if (soilType !== (field.soilType ?? null)) {
@@ -163,16 +217,32 @@ function SoilForm({ field, latest, onCancel, onSaved }) {
   return (
     <Panel className="px-5 py-5">
       <form onSubmit={onSubmit} noValidate>
-        <p className="mb-4 text-[13px] text-muted">
-          Saved as a new soil test. Earlier tests stay in the field's history.
-        </p>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
+          <p className="text-[13px] text-muted">
+            Saved as a new soil test. Earlier tests stay in the field's history.
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            loading={satelliteLoading}
+            onClick={onAutoFillSatellite}
+            className="text-xs"
+          >
+            🌍 Auto-Fill from Satellite (ISRIC)
+          </Button>
+        </div>
+        {satelliteSource && (
+          <div className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800 border border-emerald-200">
+            ✓ Pre-filled available N, pH, and Organic Carbon from <strong>{satelliteSource}</strong>.
+          </div>
+        )}
         {error && (
           <div className="mb-4">
             <ErrorNotice error={error} />
           </div>
         )}
         <fieldset className="grid gap-4 sm:grid-cols-3">
-          <legend className="sr-only">Nutrients</legend>
+          <legend className="sr-only">Macronutrients</legend>
           {input('nitrogen', { label: 'Available N', unit: 'kg/ha' })}
           {input('phosphorus', { label: 'Available P', unit: 'kg/ha' })}
           {input('potassium', { label: 'Available K', unit: 'kg/ha' })}
@@ -194,6 +264,22 @@ function SoilForm({ field, latest, onCancel, onSaved }) {
             <FieldError>{errors.sampleDate}</FieldError>
           </div>
         </div>
+
+        <details className="mt-4 border-t border-line/60 pt-3">
+          <summary className="cursor-pointer text-xs font-medium text-ink-2 hover:text-ink">
+            Secondary & Micronutrients (optional: S, Zn, Fe, Cu, Mn, B, EC)
+          </summary>
+          <div className="mt-3 grid gap-4 sm:grid-cols-3">
+            {input('sulfur', { label: 'Sulfur (S)', unit: 'ppm', hint: 'target > 10' })}
+            {input('zinc', { label: 'Zinc (Zn)', unit: 'ppm', hint: 'target > 0.6' })}
+            {input('iron', { label: 'Iron (Fe)', unit: 'ppm', hint: 'target > 4.5' })}
+            {input('copper', { label: 'Copper (Cu)', unit: 'ppm', hint: 'target > 0.2' })}
+            {input('manganese', { label: 'Manganese (Mn)', unit: 'ppm', hint: 'target > 2.0' })}
+            {input('boron', { label: 'Boron (B)', unit: 'ppm', hint: 'target > 0.5' })}
+            {input('ec', { label: 'Electrical Conductivity', unit: 'dS/m', hint: 'target < 1.0' })}
+          </div>
+        </details>
+
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div>
             <Label htmlFor="soil-type" hint="field attribute">

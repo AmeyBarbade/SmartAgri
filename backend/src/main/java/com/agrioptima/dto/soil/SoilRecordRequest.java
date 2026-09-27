@@ -12,8 +12,8 @@ import java.time.LocalDate;
 
 /**
  * A soil test result. N/P/K are plant-available amounts in kg/ha.
- * The upper bounds are sanity limits to catch data-entry errors (e.g. wrong units),
- * NOT agronomic thresholds; fertility ratings are applied in the recommendation engine.
+ * Micronutrients (S, Zn, Fe, Cu, Mn, B) are in ppm (mg/kg).
+ * EC is in dS/m.
  */
 public record SoilRecordRequest(
         @NotNull @PastOrPresent
@@ -38,6 +38,34 @@ public record SoilRecordRequest(
         /* Percent. */
         @DecimalMin("0") @DecimalMax("100") @Digits(integer = 3, fraction = 2)
         BigDecimal moisture,
+
+        /* Sulfur in ppm. */
+        @DecimalMin("0") @DecimalMax("500") @Digits(integer = 5, fraction = 2)
+        BigDecimal sulfur,
+
+        /* Zinc in ppm. */
+        @DecimalMin("0") @DecimalMax("100") @Digits(integer = 4, fraction = 2)
+        BigDecimal zinc,
+
+        /* Iron in ppm. */
+        @DecimalMin("0") @DecimalMax("200") @Digits(integer = 4, fraction = 2)
+        BigDecimal iron,
+
+        /* Copper in ppm. */
+        @DecimalMin("0") @DecimalMax("50") @Digits(integer = 3, fraction = 2)
+        BigDecimal copper,
+
+        /* Manganese in ppm. */
+        @DecimalMin("0") @DecimalMax("200") @Digits(integer = 4, fraction = 2)
+        BigDecimal manganese,
+
+        /* Boron in ppm. */
+        @DecimalMin("0") @DecimalMax("50") @Digits(integer = 3, fraction = 2)
+        BigDecimal boron,
+
+        /* Electrical Conductivity in dS/m. */
+        @DecimalMin("0") @DecimalMax("50") @Digits(integer = 3, fraction = 2)
+        BigDecimal ec,
 
         @Size(max = 500)
         String notes

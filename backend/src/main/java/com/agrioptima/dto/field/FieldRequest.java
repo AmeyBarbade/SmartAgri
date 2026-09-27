@@ -38,8 +38,22 @@ public record FieldRequest(
         LocalDate sowingDate,
 
         @Size(max = 100)
-        String previousCrop
+        String previousCrop,
+
+        String boundaryGeojson,
+
+        @DecimalMin("-90.0") @DecimalMax("90.0")
+        BigDecimal centroidLat,
+
+        @DecimalMin("-180.0") @DecimalMax("180.0")
+        BigDecimal centroidLon
 ) {
+
+    public FieldRequest(String name, BigDecimal areaHa, String soilType, IrrigationType irrigationType,
+                        Long cropId, Long growthStageId, Season season, LocalDate sowingDate, String previousCrop) {
+        this(name, areaHa, soilType, irrigationType, cropId, growthStageId, season, sowingDate, previousCrop,
+                null, null, null);
+    }
 
     @JsonIgnore
     @AssertTrue(message = "growthStageId requires cropId")

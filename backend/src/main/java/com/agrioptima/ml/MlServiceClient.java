@@ -4,6 +4,7 @@ import com.agrioptima.ml.MlContracts.OptimizeRequest;
 import com.agrioptima.ml.MlContracts.OptimizeResponse;
 import com.agrioptima.ml.MlContracts.PredictRequest;
 import com.agrioptima.ml.MlContracts.PredictResponse;
+import com.agrioptima.ml.MlContracts.WeatherInfo;
 import com.agrioptima.ml.MlServiceException.Kind;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +25,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpTimeoutException;
 import java.util.function.Predicate;
 
-/** HTTP client for the FastAPI ML service: {@code POST /optimize} and {@code POST /predict-yield}. */
+/** HTTP client for the FastAPI ML service: {@code POST /optimize}, {@code POST /predict-yield} and {@code GET /weather}. */
 @Component
 public class MlServiceClient {
 
@@ -60,6 +61,47 @@ public class MlServiceClient {
                         && p.index() >= 0 && p.index() < request.scenarios().size()),
                 "yield prediction", "missing model version, wrong number of predictions or invalid yield/index");
         return response;
+    }
+
+    public WeatherInfo fetchWeather(double lat, double lon) {
+        try {
+            return restClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/weather").queryParam("lat", lat).queryParam("lon", lon).build())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .body(WeatherInfo.class);
+        } catch (Exception e) {
+            log.warn("Failed to fetch weather from ML service for ({}, {}): {}", lat, lon, e.getMessage());
+            return null;
+        }
+    }
+
+    public MlContracts.SoilGridsResponse fetchSoilGrids(double lat, double lon) {
+        try {
+            return restClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/soilgrids").queryParam("lat", lat).queryParam("lon", lon).build())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .body(MlContracts.SoilGridsResponse.class);
+        } catch (Exception e) {
+            log.warn("Failed to fetch soilgrids from ML service for ({}, {}): {}", lat, lon, e.getMessage());
+            return null;
+        }
+    }
+
+    public byte[] generatePdf(String jsonPayload) {
+        try {
+            return restClient.post()
+                    .uri("/generate-pdf")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_PDF)
+                    .body(jsonPayload)
+                    .retrieve()
+                    .body(byte[].class);
+        } catch (Exception e) {
+            log.error("Failed to generate PDF from ML service: {}", e.getMessage());
+            throw new RuntimeException("Failed to generate prescription PDF", e);
+        }
     }
 
     private <T> T post(String path, String operation, Object body, Class<T> type) {

@@ -1,9 +1,10 @@
-import { History, LayoutDashboard, LogOut, Map, Sprout } from 'lucide-react'
+import { Globe, History, LayoutDashboard, LogOut, Map, Sprout } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/map', label: 'GIS Satellite Map', icon: Globe },
   { to: '/farms', label: 'Farms & fields', icon: Map },
   { to: '/history', label: 'History', icon: History },
 ]
@@ -38,20 +39,22 @@ export default function AppShell() {
         </div>
       </header>
       <div className="flex flex-1 flex-col md:flex-row">
-        <nav className="border-b border-line bg-surface md:w-52 md:shrink-0 md:border-r md:border-b-0">
-          <ul className="flex gap-1 overflow-x-auto px-3 py-2 md:flex-col md:py-4">
+        <nav className="border-b border-slate-200/90 bg-[#f8fafc] md:w-56 md:shrink-0 md:border-r md:border-b-0 md:border-slate-200/90 shadow-[1px_0_6px_rgba(0,0,0,0.03)]">
+          <ul className="flex gap-1 overflow-x-auto px-3 py-2.5 md:flex-col md:gap-1.5 md:py-4">
             {NAV.map(({ to, label, icon: Icon, end }) => (
               <li key={to}>
                 <NavLink
                   to={to}
                   end={end}
                   className={({ isActive }) =>
-                    `flex items-center gap-2.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm ${
-                      isActive ? 'bg-accent-soft font-medium text-accent' : 'text-ink-2 hover:bg-canvas'
+                    `flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-emerald-700 font-semibold text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
                     }`
                   }
                 >
-                  <Icon className="size-4" aria-hidden />
+                  <Icon className="size-4 shrink-0" aria-hidden />
                   {label}
                 </NavLink>
               </li>

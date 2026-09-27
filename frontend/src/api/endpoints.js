@@ -33,7 +33,17 @@ export const recommendationApi = {
     data(api.post(`/api/fields/${fieldId}/recommendations`, null, { params: profile ? { profile } : {} })),
   history: (fieldId) => data(api.get(`/api/fields/${fieldId}/recommendations`)),
   get: (id) => data(api.get(`/api/recommendations/${id}`)),
+  downloadPdf: (id) => api.get(`/api/recommendations/${id}/pdf`, { responseType: 'blob' }),
 }
+
+export const soilGridsApi = {
+  fetch: (lat, lon) => data(api.get('/api/soilgrids', { params: { lat, lon } })),
+}
+
+export const sustainabilityApi = {
+  get: (fieldId) => data(api.get(`/api/fields/${fieldId}/sustainability`)),
+}
+
 
 /** Converts a FieldResponse back into the FieldRequest body that PUT /api/fields/{id} expects. */
 export function fieldToRequest(field, overrides = {}) {
@@ -47,6 +57,9 @@ export function fieldToRequest(field, overrides = {}) {
     season: field.season ?? null,
     sowingDate: field.sowingDate ?? null,
     previousCrop: field.previousCrop ?? null,
+    boundaryGeojson: field.boundaryGeojson ?? null,
+    centroidLat: field.centroidLat ?? null,
+    centroidLon: field.centroidLon ?? null,
     ...overrides,
   }
 }

@@ -26,6 +26,8 @@ import com.agrioptima.entity.Fertilizer;
 import com.agrioptima.entity.Field;
 import com.agrioptima.entity.Recommendation;
 import com.agrioptima.entity.RecommendationPlan;
+import com.agrioptima.entity.SoilRecord;
+import com.agrioptima.engine.MicronutrientCheck;
 import com.agrioptima.exception.ResourceNotFoundException;
 import com.agrioptima.ml.MlContracts;
 import com.agrioptima.ml.MlContracts.OptimizeResponse;
@@ -35,6 +37,7 @@ import com.agrioptima.ml.MlServiceException;
 import com.agrioptima.repository.FertilizerRepository;
 import com.agrioptima.repository.FieldRepository;
 import com.agrioptima.repository.RecommendationRepository;
+import com.agrioptima.repository.SoilRecordRepository;
 import com.agrioptima.service.FieldService;
 import com.agrioptima.service.NutrientRequirementService;
 import com.agrioptima.service.recommendation.PlanScoringService.Candidate;
@@ -80,6 +83,7 @@ public class RecommendationService {
     private final FieldRepository fieldRepository;
     private final FertilizerRepository fertilizerRepository;
     private final RecommendationRepository recommendationRepository;
+    private final SoilRecordRepository soilRecordRepository;
     private final MlServiceClient ml;
     private final PlanScoringService scoring;
     private final RecommendationProperties properties;
@@ -89,7 +93,9 @@ public class RecommendationService {
 
     public RecommendationService(NutrientRequirementService requirementService, FieldService fieldService,
                                  FieldRepository fieldRepository, FertilizerRepository fertilizerRepository,
-                                 RecommendationRepository recommendationRepository, MlServiceClient ml,
+                                 RecommendationRepository recommendationRepository,
+                                 SoilRecordRepository soilRecordRepository,
+                                 MlServiceClient ml,
                                  PlanScoringService scoring, RecommendationProperties properties,
                                  ObjectMapper objectMapper, PlatformTransactionManager txManager) {
         this.requirementService = requirementService;
@@ -97,6 +103,7 @@ public class RecommendationService {
         this.fieldRepository = fieldRepository;
         this.fertilizerRepository = fertilizerRepository;
         this.recommendationRepository = recommendationRepository;
+        this.soilRecordRepository = soilRecordRepository;
         this.ml = ml;
         this.scoring = scoring;
         this.properties = properties;
@@ -107,7 +114,8 @@ public class RecommendationService {
     }
 
     /** Field data needed after the read transaction (lazy associations resolved). */
-    record Snapshot(FieldInfo field, CodeName crop, List<Fertilizer> fertilizers, YieldFeatureMapper.Base features) {
+    record Snapshot(FieldInfo field, CodeName crop, List<Fertilizer> fertilizers, YieldFeatureMapper.Base features,
+                    SoilRecord latestSoil) {
     }
 
     public RecommendationResponse create(Long ownerId, Long fieldId, String profileCode) {
@@ -137,6 +145,41 @@ public class RecommendationService {
             warnings.addAll(opt.warnings());
         }
 
+        // Weather risk check from farm coordinates or state centroid
+        Double lat = null;
+        Double lon = null;
+        if (snap.field().latitude() != null && snap.field().longitude() != null) {
+            lat = snap.field().latitude().doubleValue();
+            lon = snap.field().longitude().doubleValue();
+        } else if (snap.features().state() != null) {
+            switch (snap.features().state()) {
+                case "BIHAR" -> { lat = 25.6; lon = 85.1; }
+                case "UTTAR_PRADESH" -> { lat = 26.8; lon = 80.9; }
+                case "PUNJAB" -> { lat = 30.9; lon = 75.8; }
+                case "HARYANA" -> { lat = 29.0; lon = 76.0; }
+                case "WEST_BENGAL" -> { lat = 22.9; lon = 87.8; }
+                case "ODISHA" -> { lat = 20.9; lon = 85.0; }
+                case "CHHATTISGARH" -> { lat = 21.2; lon = 81.6; }
+                case "ANDHRA_PRADESH" -> { lat = 15.9; lon = 79.7; }
+                default -> { lat = 19.75; lon = 75.71; }
+            }
+        }
+        MlContracts.WeatherInfo weather = null;
+        if (lat != null && lon != null) {
+            weather = ml.fetchWeather(lat, lon);
+            if (weather != null && weather.heavyRainWarning()) {
+                warnings.add(weather.warningReason());
+            }
+        }
+
+        // Micronutrient deficiency checks
+        List<MicronutrientCheck.Assessment> micronutrients = MicronutrientCheck.check(snap.latestSoil());
+        for (MicronutrientCheck.Assessment a : micronutrients) {
+            if ("DEFICIENT".equals(a.status())) {
+                warnings.add(a.name() + " deficiency: " + a.note());
+            }
+        }
+
         // 5: infeasible -> no yield prediction, no plans
         if ("INFEASIBLE".equals(opt.status())) {
             List<Shortfall> shortfalls = opt.infeasibility() == null ? List.of() : opt.infeasibility().stream()
@@ -146,7 +189,7 @@ public class RecommendationService {
                     : "No plan can meet the requirement with the available fertilizers.";
             RecommendationResponse response = response(req, snap, opt, "INFEASIBLE", false, reason, List.of(), null,
                     null, new YieldPredictionInfo(false, "No yield prediction: no feasible plan.", null,
-                            snap.features().inputs()), shortfalls, warnings, assumptions, null);
+                            snap.features().inputs()), shortfalls, warnings, assumptions, null, weather, null, micronutrients);
             return persist(fieldId, response, null, List.of());
         }
 
@@ -205,8 +248,29 @@ public class RecommendationService {
         YieldPredictionInfo yieldInfo = new YieldPredictionInfo(yields.yields() != null, yields.unavailableReason(),
                 yields.modelVersion(), snap.features().inputs());
 
+        // IPNS Organic Blending Advisory
+        RecommendationResponse.IpnsAdvisory ipns = null;
+        Plan selPlan = plans.stream().filter(p -> p.strategy().equals(selected)).findFirst().orElse(null);
+        if (selPlan != null && selPlan.suppliedKgHa().n().doubleValue() > 0) {
+            double totalN = selPlan.suppliedKgHa().n().doubleValue();
+            double chemN = Math.round(totalN * 0.75 * 100.0) / 100.0;
+            double orgN = Math.round((totalN - chemN) * 100.0) / 100.0;
+            double fymHa = Math.round((orgN / 0.005) * 10.0) / 10.0; // FYM ~0.5% N
+            double vermiHa = Math.round((orgN / 0.015) * 10.0) / 10.0; // Vermicompost ~1.5% N
+            double fymField = Math.round((fymHa * area) * 10.0) / 10.0;
+            double vermiField = Math.round((vermiHa * area) * 10.0) / 10.0;
+            String note = "Replace 25% of chemical Nitrogen (" + orgN + " kg/ha) with " + fymHa + " kg/ha of Farm Yard Manure (FYM) or "
+                    + vermiHa + " kg/ha of Vermicompost to rebuild Soil Organic Carbon and reduce chemical input costs.";
+            ipns = new RecommendationResponse.IpnsAdvisory(
+                    BigDecimal.valueOf(chemN), BigDecimal.valueOf(orgN),
+                    BigDecimal.valueOf(fymHa), BigDecimal.valueOf(vermiHa),
+                    BigDecimal.valueOf(fymField), BigDecimal.valueOf(vermiField),
+                    note
+            );
+        }
+
         RecommendationResponse response = response(req, snap, opt, opt.status(), true, null, plans, selectedPlan,
-                scoringInfo, yieldInfo, List.of(), warnings, assumptions, yields.modelVersion());
+                scoringInfo, yieldInfo, List.of(), warnings, assumptions, yields.modelVersion(), weather, ipns, micronutrients);
         return persist(fieldId, response, ranking.mode().name(), plans);
     }
 
@@ -227,10 +291,18 @@ public class RecommendationService {
                     .orElseThrow(() -> new ResourceNotFoundException("Recommendation", recommendationId));
             try {
                 return objectMapper.readValue(r.getResponseJson(), RecommendationResponse.class)
-                        .withIdentity(r.getId(), asStored(r.getCreatedAt()));
+                    .withIdentity(r.getId(), asStored(r.getCreatedAt()));
             } catch (JsonProcessingException e) {
                 throw new IllegalStateException("stored recommendation " + recommendationId + " is unreadable", e);
             }
+        });
+    }
+
+    public byte[] getPdf(Long ownerId, Long recommendationId) {
+        return readTx.execute(s -> {
+            Recommendation r = recommendationRepository.findOwned(recommendationId, ownerId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Recommendation", recommendationId));
+            return ml.generatePdf(r.getResponseJson());
         });
     }
 
@@ -238,13 +310,17 @@ public class RecommendationService {
 
     private Snapshot snapshot(Long ownerId, Long fieldId) {
         Field f = fieldService.requireOwned(ownerId, fieldId);
+        BigDecimal lat = f.getCentroidLat() != null ? f.getCentroidLat() : f.getFarm().getLatitude();
+        BigDecimal lon = f.getCentroidLon() != null ? f.getCentroidLon() : f.getFarm().getLongitude();
         FieldInfo info = new FieldInfo(f.getId(), f.getName(), f.getFarm().getName(), f.getFarm().getLocationName(),
                 f.getAreaHa(), f.getSoilType(), f.getIrrigationType() == null ? null : f.getIrrigationType().name(),
-                f.getSeason() == null ? null : f.getSeason().name(), f.getSowingDate(), f.getPreviousCrop());
+                f.getSeason() == null ? null : f.getSeason().name(), f.getSowingDate(), f.getPreviousCrop(),
+                lat, lon);
         CodeName crop = new CodeName(f.getCrop().getCode(), f.getCrop().getName());
         YieldFeatureMapper.Base features = YieldFeatureMapper.map(crop.code(), f.getFarm().getLocationName(),
                 f.getSowingDate(), f.getSoilType(), f.getIrrigationType(), f.getPreviousCrop());
-        return new Snapshot(info, crop, fertilizerRepository.findAllByActiveTrueOrderByNameAsc(), features);
+        SoilRecord latestSoil = soilRecordRepository.findFirstByFieldIdOrderBySampleDateDescIdDesc(fieldId).orElse(null);
+        return new Snapshot(info, crop, fertilizerRepository.findAllByActiveTrueOrderByNameAsc(), features, latestSoil);
     }
 
     private record Verified(MlContracts.Plan plan, PlanVerification check) {
@@ -316,7 +392,10 @@ public class RecommendationService {
                                             String status, boolean feasible, String infeasibilityReason,
                                             List<Plan> plans, Selected selected, Scoring scoringInfo,
                                             YieldPredictionInfo yieldInfo, List<Shortfall> shortfalls,
-                                            List<String> warnings, List<String> assumptions, String modelVersion) {
+                                            List<String> warnings, List<String> assumptions, String modelVersion,
+                                            MlContracts.WeatherInfo weather,
+                                            RecommendationResponse.IpnsAdvisory ipns,
+                                            List<MicronutrientCheck.Assessment> micronutrients) {
         var s = req.soil();
         var lines = req.nutrients();
         var soil = new RecommendationResponse.Soil(s.soilTestUsed(), s.sampleDate(), s.ageDays(), s.availableN(),
@@ -332,7 +411,7 @@ public class RecommendationService {
         return new RecommendationResponse(null, null, status, feasible, infeasibilityReason, snap.field(), snap.crop(),
                 new RecommendationResponse.Stage(req.stage().code(), req.stage().name(), req.stage().seq()), soil,
                 requirement, plans, selected, scoringInfo, yieldInfo, shortfalls, List.copyOf(warnings),
-                List.copyOf(assumptions), kb, modelVersion, solver, req.disclaimer());
+                List.copyOf(assumptions), kb, modelVersion, solver, req.disclaimer(), weather, ipns, micronutrients);
     }
 
     private RecommendationResponse persist(Long fieldId, RecommendationResponse response, String scoringMode,

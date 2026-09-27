@@ -36,7 +36,7 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   ml:
     # FastAPI ML service (Milestone 6). Internal URL; never returned to API clients.
-    base-url: ${ML_SERVICE_BASE_URL:http://localhost:8001}
+    base-url: ${ML_SERVICE_BASE_URL:${ML_SERVICE_URL:http://localhost:8000}}
     connect-timeout: ${ML_SERVICE_CONNECT_TIMEOUT:2s}
     read-timeout: ${ML_SERVICE_READ_TIMEOUT:15s}
   recommendation:

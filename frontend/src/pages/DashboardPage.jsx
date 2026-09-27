@@ -1,7 +1,7 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Globe } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { loadOverview } from '../api/overview'
-import { EmptyState, ErrorNotice, PageHeader, Panel, Section, Skeleton, StatusDot } from '../components/ui'
+import { ButtonLink, EmptyState, ErrorNotice, PageHeader, Panel, Section, Skeleton, StatusDot } from '../components/ui'
 import { fmt, fmtDate, fmtDateTime, fmtFixed, strategyLabel } from '../format'
 import { useAsync } from '../useAsync'
 
@@ -19,9 +19,33 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         meta={data ? `${data.length} ${data.length === 1 ? 'farm' : 'farms'} · ${fieldCount} ${fieldCount === 1 ? 'field' : 'fields'}` : 'Your farms and fields'}
+        actions={
+          <ButtonLink variant="primary" to="/map">
+            <Globe className="size-4" />
+            GIS Satellite Map
+          </ButtonLink>
+        }
       />
       {loading && <DashboardSkeleton />}
       {error && <ErrorNotice error={error} onRetry={reload} />}
+      {data && data.length > 0 && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-accent-line bg-gradient-to-r from-accent-soft/40 to-surface px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-md bg-accent p-2 text-white shrink-0">
+              <Globe className="size-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-ink">GIS Satellite Map Active</p>
+              <p className="text-xs text-muted">
+                View your field boundaries, satellite imagery (Esri), and calculate parcel acreage in real-time.
+              </p>
+            </div>
+          </div>
+          <ButtonLink variant="secondary" to="/map">
+            Open Satellite Map →
+          </ButtonLink>
+        </div>
+      )}
       {data && data.length === 0 && (
         <EmptyState title="No farms yet">
           Farms and fields are created through the API for this prototype. Run{' '}

@@ -1,4 +1,5 @@
-import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowLeft, Download } from 'lucide-react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { recommendationApi } from '../api/endpoints'
 import { ButtonLink, ErrorNotice, Loading, PageHeader, StatusDot } from '../components/ui'
@@ -15,6 +16,30 @@ export default function RecommendationPage() {
     () => (fresh ? Promise.resolve(passed) : recommendationApi.get(recommendationId)),
     [recommendationId],
   )
+
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownloadPdf = async () => {
+    if (!data) return
+    try {
+      setDownloading(true)
+      const res = await recommendationApi.downloadPdf(data.id)
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `agrioptima_prescription_${data.id}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to download PDF:', err)
+      alert('Could not download prescription PDF. Please try again.')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   if (loading) return <Loading label="Loading recommendation…" />
   if (error) return <ErrorNotice error={error} onRetry={reload} />
@@ -44,14 +69,25 @@ export default function RecommendationPage() {
           </span>
         }
         actions={
-          <>
-            <ButtonLink variant="tertiary" to={`/history?field=${rec.field.id}`}>
-              View history
-            </ButtonLink>
+          <div className="flex items-center gap-2">
+            {rec.feasible && (
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={downloading}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-800 transition-colors"
+              >
+                <Download className="size-3.5" />
+                {downloading ? 'Downloading…' : 'Download Prescription (PDF)'}
+              </button>
+            )}
             <ButtonLink variant="secondary" to={`/fields/${rec.field.id}`}>
               Back to field
             </ButtonLink>
-          </>
+            <ButtonLink variant="tertiary" to={`/history?field=${rec.field.id}`}>
+              View history
+            </ButtonLink>
+          </div>
         }
       />
       <RecommendationView rec={rec} />

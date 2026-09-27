@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public record FieldResponse(Long id, Long farmId, String name, BigDecimal areaHa, String soilType,
                             IrrigationType irrigationType, CropRef crop, StageRef growthStage, Season season,
                             LocalDate sowingDate, String previousCrop,
+                            String boundaryGeojson, BigDecimal centroidLat, BigDecimal centroidLon,
                             LocalDateTime createdAt, LocalDateTime updatedAt) {
 
     public record CropRef(Long id, String code, String name) {
@@ -30,6 +31,8 @@ public record FieldResponse(Long id, Long farmId, String name, BigDecimal areaHa
     public static FieldResponse from(Field f) {
         return new FieldResponse(f.getId(), f.getFarm().getId(), f.getName(), f.getAreaHa(), f.getSoilType(),
                 f.getIrrigationType(), CropRef.of(f.getCrop()), StageRef.of(f.getGrowthStage()), f.getSeason(),
-                f.getSowingDate(), f.getPreviousCrop(), f.getCreatedAt(), f.getUpdatedAt());
+                f.getSowingDate(), f.getPreviousCrop(),
+                f.getBoundaryGeojson(), f.getCentroidLat(), f.getCentroidLon(),
+                f.getCreatedAt(), f.getUpdatedAt());
     }
 }

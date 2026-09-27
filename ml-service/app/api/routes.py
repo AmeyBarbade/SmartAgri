@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Query, Request
+from fastapi import APIRouter, Body, Depends, Query, Request, Response
 
 from app import services
 from app.api.schemas import (
@@ -13,7 +13,12 @@ from app.api.schemas import (
     OptimizeResponse,
     PredictYieldRequest,
     PredictYieldResponse,
+    SoilGridsResponse,
+    WeatherResponse,
 )
+from app.pdf_generator import create_prescription_pdf
+from app.soilgrids import fetch_isric_soilgrids
+from app.weather import get_weather_data
 from app.errors import ERROR_RESPONSES, PROBLEM_JSON, Problem
 from app.optimizer import OptimizationRequest
 from app.services import ModelState
@@ -101,3 +106,31 @@ def optimize(body: Annotated[OptimizationRequest, Body(openapi_examples=OPTIMIZE
     An unreachable requirement is a valid answer, not an error: **200** with `status: INFEASIBLE`,
     `feasible: false`, an empty `plans` list and the reason per nutrient."""
     return services.run_optimizer(body)
+
+
+@router.get("/weather", response_model=WeatherResponse, tags=["weather"],
+            summary="Weather forecast and runoff/leaching risk assessment")
+def weather(lat: Annotated[float, Query(description="Latitude", ge=-90, le=90)],
+            lon: Annotated[float, Query(description="Longitude", ge=-180, le=180)]) -> WeatherResponse:
+    """Queries Open-Meteo 7-day weather forecast and evaluates risk of fertilizer runoff or leaching
+    due to heavy rain (>20mm in next 3 days)."""
+    return WeatherResponse(**get_weather_data(lat, lon))
+
+
+@router.get("/soilgrids", response_model=SoilGridsResponse, tags=["soil"],
+            summary="Retrieve satellite soil properties from ISRIC SoilGrids v2.0")
+def soilgrids(lat: Annotated[float, Query(description="Latitude", ge=-90, le=90)],
+              lon: Annotated[float, Query(description="Longitude", ge=-180, le=180)]) -> SoilGridsResponse:
+    """Queries ISRIC SoilGrids v2.0 REST API for 0-5cm soil properties (N, pH, organic carbon)
+    with resilient regional Vertisol simulation fallback."""
+    return SoilGridsResponse(**fetch_isric_soilgrids(lat, lon))
+
+
+@router.post("/generate-pdf", tags=["export"], summary="Generate PDF prescription from recommendation response")
+def generate_pdf(body: Annotated[dict, Body(...)]) -> Response:
+    """Renders a 1-page A4 PDF prescription for an AgriOptima recommendation."""
+    pdf_bytes = create_prescription_pdf(body)
+    return Response(content=pdf_bytes, media_type="application/pdf")
+
+
+

@@ -87,4 +87,17 @@ public final class MlContracts {
                                   List<Prediction> predictions, boolean extrapolation, List<String> warnings,
                                   String disclaimer) {
     }
+
+    // --- GET /weather --------------------------------------------------------------------------------------------
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record WeatherInfo(double temperature, double rainfall7dMm, boolean heavyRainWarning, String warningReason) {
+    }
+
+    // --- GET /soilgrids ------------------------------------------------------------------------------------------
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record SoilGridsResponse(double nitrogenKgHa, double ph, double organicCarbonPct,
+                                    boolean isFallback, String source) {
+    }
 }

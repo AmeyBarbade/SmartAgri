@@ -143,3 +143,26 @@ class OptimizeResponse(OptimizationResult):
     feasible: bool = Field(description="False only when status is INFEASIBLE (then plans is empty)")
     infeasibility_reason: str | None = Field(description="Human-readable summary of `infeasibility`, else null")
     units: dict[str, str] = Field(description="Units of the numeric fields")
+
+
+# --- /weather ----------------------------------------------------------------------------------------------------
+
+
+class WeatherResponse(BaseModel):
+    temperature: float = Field(description="Average maximum temperature (°C) over the next 3 days")
+    rainfall_7d_mm: float = Field(description="Cumulative rainfall forecast (mm) over the next 7 days")
+    heavy_rain_warning: bool = Field(description="True if heavy rainfall (>20mm) is forecast in the next 3 days")
+    warning_reason: str | None = Field(default=None, description="Agronomic leaching and runoff hazard advisory")
+
+
+# --- /soilgrids --------------------------------------------------------------------------------------------------
+
+
+class SoilGridsResponse(BaseModel):
+    nitrogen_kg_ha: float = Field(description="Available Nitrogen (kg/ha) estimated from ISRIC 0-5cm layer")
+    ph: float = Field(description="Soil pH (in water, 0-5cm layer)")
+    organic_carbon_pct: float = Field(description="Soil Organic Carbon percentage (%) in 0-5cm layer")
+    is_fallback: bool = Field(description="True if satellite query timed out and regional fallback simulation was used")
+    source: str = Field(description="Data provenance label")
+
+

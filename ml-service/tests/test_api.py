@@ -479,7 +479,7 @@ def test_cors_origin_parsing(monkeypatch):
 def test_openapi_documents_endpoints_units_and_errors(client):
     doc = client.get("/openapi.json").json()
     paths = doc["paths"]
-    assert set(paths) == {"/health", "/model/info", "/predict-yield", "/optimize"}
+    assert set(paths) == {"/health", "/model/info", "/predict-yield", "/optimize", "/weather", "/soilgrids", "/generate-pdf"}
     assert {"200", "400", "422", "500", "503"} <= set(paths["/predict-yield"]["post"]["responses"])
     assert {"200", "400", "422", "500"} <= set(paths["/optimize"]["post"]["responses"])
     assert "503" in paths["/model/info"]["get"]["responses"]
@@ -502,3 +502,52 @@ def test_openapi_examples_are_valid_requests(client):
             r = client.post(path, json=ex["value"])
             expected = 422 if name == "maize" else 200
             assert r.status_code == expected, (path, name, r.text)
+
+
+def test_weather_endpoint(client):
+    r = client.get("/weather?lat=25.6&lon=85.1")
+    assert r.status_code == 200
+    body = r.json()
+    assert "temperature" in body
+    assert "rainfall_7d_mm" in body
+    assert "heavy_rain_warning" in body
+    assert isinstance(body["heavy_rain_warning"], bool)
+
+
+def test_soilgrids_endpoint(client):
+    r = client.get("/soilgrids?lat=25.6&lon=85.1")
+    assert r.status_code == 200
+    body = r.json()
+    assert "nitrogen_kg_ha" in body
+    assert "ph" in body
+    assert "organic_carbon_pct" in body
+    assert "source" in body
+    assert body["ph"] > 0
+    assert body["nitrogen_kg_ha"] > 0
+
+
+def test_generate_pdf_endpoint(client):
+    payload = {
+        "id": 1,
+        "createdAt": "2026-09-28T01:00:00",
+        "field": {"name": "Test Field", "farmName": "Test Farm", "location": "Patna", "areaHa": 2.0},
+        "crop": {"name": "Wheat"},
+        "growthStage": {"name": "Crown root initiation"},
+        "selectedPlan": {"label": "Balanced Plan", "strategy": "BALANCED"},
+        "plans": [
+            {
+                "strategy": "BALANCED",
+                "costPerHa": 4500,
+                "fieldCost": 9000,
+                "yield": {"available": True, "predictedYieldTHa": 4.5},
+                "items": [{"name": "Urea", "kgHa": 100, "fieldKg": 200, "fieldBags": 4, "bagKg": 50, "costPerHa": 1500}]
+            }
+        ]
+    }
+    r = client.post("/generate-pdf", json=payload)
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "application/pdf"
+    assert r.content.startswith(b"%PDF")
+
+
+
