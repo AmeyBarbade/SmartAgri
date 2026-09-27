@@ -1,0 +1,50 @@
+{
+  "requirement_kg_ha": {
+    "n": 30,
+    "p2o5": 30,
+    "k2o": 30
+  },
+  "area_ha": 1.2,
+  "fertilizers": [
+    {
+      "code": "DAP",
+      "name": "Diammonium Phosphate (DAP)",
+      "n_pct": 18,
+      "p2o5_pct": 46,
+      "k2o_pct": 0,
+      "price_per_kg": 27.0
+    },
+    {
+      "code": "MOP",
+      "name": "Muriate of Potash (MOP)",
+      "n_pct": 0,
+      "p2o5_pct": 0,
+      "k2o_pct": 60,
+      "price_per_kg": 34.0
+    },
+    {
+      "code": "NPK_10_26_26",
+      "name": "NPK Complex 10:26:26",
+      "n_pct": 10,
+      "p2o5_pct": 26,
+      "k2o_pct": 26,
+      "price_per_kg": 29.4
+    },
+    {
+      "code": "SSP",
+      "name": "Single Super Phosphate (SSP)",
+      "n_pct": 0,
+      "p2o5_pct": 16,
+      "k2o_pct": 0,
+      "price_per_kg": 11.0
+    },
+    {
+      "code": "UREA",
+      "name": "Urea",
+      "n_pct": 46,
+      "p2o5_pct": 0,
+      "k2o_pct": 0,
+      "price_per_kg": 5.92
+    }
+  ]
+}

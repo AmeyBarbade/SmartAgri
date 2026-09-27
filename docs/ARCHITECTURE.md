@@ -71,6 +71,14 @@ training/              data prep, training, evaluation, model selection scripts
 artifacts/             model.joblib, metadata.json, evaluation report
 ```
 
+> **Milestone 6 outcome (as built):** layered as routes → schemas → services → model_store / optimizer.
+> `app/api/routes.py` (thin routes), `app/api/schemas.py` (HTTP contracts with units), `app/services.py` (use cases:
+> model state, supported-crop check, response metadata; no model or LP maths), `app/errors.py` (RFC 7807, same shape
+> as the backend), `app/config.py` (`MODEL_ARTIFACT_DIR`, `ML_CORS_ALLOWED_ORIGINS`), `app/main.py` (`create_app`,
+> model loaded once in the lifespan). The shared feature pipeline is `app/features.py` (not `preprocess.py`). If the
+> artifact is missing or broken, the service starts DEGRADED: `/predict-yield` and `/model/info` return 503, and
+> `/optimize` still works. Contract: [ML_API.md](ML_API.md).
+
 ### Frontend (React)
 
 ```
@@ -169,6 +177,11 @@ erDiagram
 | `plan_items` | plan_id, fertilizer_id, kg_per_ha, total_kg, cost, stage_code | FK |
 
 Consolidation decisions vs. the brief's entity list:
+- **As built in M7 (Flyway V3):** `recommendations` keeps status, feasible, crop/stage codes, area, required N/P2O5/K2O,
+  selected strategy, scoring mode, KB and model versions, plus the **full response JSON** (`response_json`), with
+  warnings and assumptions inside the JSON. `recommendation_plans` keeps strategy, cost, field cost, excess, mass,
+  predicted yield, score and selected. Soil record, weather, explanation, sustainability and baseline columns are
+  deferred until those features exist.
 - `OptimizationRun` + `YieldPrediction` are folded into `recommendation_plans` (one row = one candidate
   plan with its optimizer output and its predicted yield + model version). A separate table added joins
   without adding information.
@@ -182,6 +195,12 @@ Consolidation decisions vs. the brief's entity list:
 
 **Candidate features** (final set chosen in Milestone 3 after leakage checks): crop, season, soil N/P/K,
 pH, rainfall, temperature, humidity, irrigation, applied N/P2O5/K2O.
+
+> **Milestone 3 outcome:** trained on the real CIMMYT CSISA LDS 2018 wheat + rice surveys (no synthetic data).
+> Final features: applied N / P2O5 / K2O kg/ha, Zn applied, sowing day, irrigation available, FYM applied,
+> crop, state, soil texture, variety type, previous crop. Soil-test N/P/K/pH and weather are not in any usable
+> dataset with applied fertilizer, so they are **not** yield-model inputs. They act through the requirement
+> engine (M4) and weather rules (M10). See [DATA_CARD.md](DATA_CARD.md) and [MODEL_CARD.md](MODEL_CARD.md).
 
 Applied-fertilizer features are essential: without them the model cannot distinguish plans, and the
 "ML + optimization" loop is meaningless. The dataset choice is driven by this requirement.
@@ -232,6 +251,33 @@ explainable on a slide.
 [ASSUMPTION] λ values are **tuning weights expressed in ₹ per kg**, not scientific constants. They are
 documented as such and exposed on the Sustainability page.
 
+> **Milestone 4 outcome:** the requirement `r_j` is produced by `NutrientRequirementEngine` (package
+> `com.agrioptima.engine`, not `service/engine/` as sketched in §2) as `requirementForOptimizer.kgPerHa`: the
+> nutrients due at the current stage after soil-test adjustment and previous applications. The knowledge base is
+> `backend/src/main/resources/knowledge/nutrient-kb-v1.json` (not DB columns on `crops`/`crop_growth_stages` as
+> planned in §5). See [RECOMMENDATION_ENGINE.md](RECOMMENDATION_ENGINE.md).
+
+> **Milestone 5 outcome:** the LP above is implemented in `ml-service/app/optimizer.py` (`linprog`, HiGHS dual
+> simplex), with the structure unchanged: x_i kg/ha, supply ≥ requirement, 0 ≤ x_i ≤ cap. Since e_j = s_j − r_j is
+> linear in x, it needs no extra variables. The plan objectives differ from the λ table:
+> A = min cost (tie-break: least excess), B = min total excess (tie-break: cost), and
+> C = min excess subject to cost ≤ C_A + β·(C_B − C_A), with β = 0.5 as a prototype parameter.
+> The weighted form was implemented first (λ_e = ₹20/kg, λ_s = ₹0.5/kg), and plan C came out identical to plan A on
+> all five M4 examples. A weighted LP only jumps between vertices at an arbitrary λ threshold, whereas the budget form
+> gives a real intermediate plan with a provable guarantee. Plans are rounded to 1 g/ha and re-verified with no
+> tolerance before they are returned. The Java re-check is `com.agrioptima.engine.plan.FertilizerPlanVerifier`,
+> which is pure and unit-tested and is wired into the orchestrator in M7. Details, assumptions and actual results:
+> [OPTIMIZER.md](OPTIMIZER.md).
+
+> **Milestone 7 outcome (as built):** `RecommendationService` (package `service.recommendation`) orchestrates the
+> requirement (M4), then `MlServiceClient` → `/optimize`, then `FertilizerPlanVerifier`, then `/predict-yield` (one
+> season-total scenario per plan), then `PlanScoringService`, then persistence. Plan C is the M5 budget form. The score
+> is predicted yield × crop price − cost − ₹20/kg × excess, with no sustainability term yet. Without yields (maize,
+> missing state/sowing date, model down) plans are ranked on cost and excess only. Infeasible requirements are
+> stored and returned with `feasible:false`. ML failures return 502/503/504 problem details, and a failed yield
+> prediction degrades gracefully. There is no weather, schedule or LLM step yet. Details:
+> [RECOMMENDATION_FLOW.md](RECOMMENDATION_FLOW.md).
+
 **Selection (Spring Boot, `PlanScoringService`):** all candidates already satisfy the hard constraint
 (re-verified in Java). The ML model then predicts yield per plan and a transparent composite score picks
 the final plan: expected revenue (predicted yield × crop price) − fertilizer cost − excess penalty. The ML
@@ -267,6 +313,10 @@ ML service (internal only, not exposed publicly):
 GET  /health          GET  /model/info
 POST /predict-yield   POST /optimize
 ```
+
+ML service errors (Milestone 6): 400 malformed JSON, 422 validation / `unsupported-crop`, 503 model not loaded,
+500 optimizer failure / internal. `/optimize` answers an unreachable requirement with **200** `status: INFEASIBLE`
+(a valid result with per-nutrient reasons), not an error. Details: [ML_API.md](ML_API.md).
 
 Errors: RFC 7807 `application/problem+json`; 400 validation, 401 unauthenticated, 403 not owner,
 404 not found, 409 conflict (duplicate email), 502/503 when a downstream service fails (with fallback where

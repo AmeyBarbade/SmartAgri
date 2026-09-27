@@ -1,0 +1,347 @@
+{
+  "id": 97,
+  "createdAt": "2026-09-27T13:14:15.602048",
+  "status": "OPTIMAL",
+  "feasible": true,
+  "field": {
+    "id": 161,
+    "name": "Wheat - CRI",
+    "farmName": "Demo farm",
+    "location": "Patna, Bihar",
+    "areaHa": 2.0,
+    "soilType": "Sandy loam",
+    "irrigationType": "IRRIGATED",
+    "season": "RABI",
+    "sowingDate": "2025-11-20",
+    "previousCrop": "Rice"
+  },
+  "crop": {
+    "code": "WHEAT",
+    "name": "Wheat"
+  },
+  "growthStage": {
+    "code": "CRI",
+    "name": "Crown root initiation",
+    "seq": 2
+  },
+  "soil": {
+    "soilTestUsed": true,
+    "sampleDate": "2025-11-10",
+    "ageDays": 321,
+    "availableNKgHa": 300.0,
+    "availablePKgHa": 15.0,
+    "availableKKgHa": 200.0,
+    "ph": 7.2,
+    "organicCarbonPct": 0.55,
+    "nClass": "MEDIUM",
+    "pClass": "MEDIUM",
+    "kClass": "MEDIUM"
+  },
+  "requirement": {
+    "dueNowKgHa": {
+      "n": 40.0,
+      "p2o5": 0.0,
+      "k2o": 0.0
+    },
+    "dueNowFieldKg": {
+      "n": 80.0,
+      "p2o5": 0.0,
+      "k2o": 0.0
+    },
+    "alreadyAppliedKgHa": {
+      "n": 40.0,
+      "p2o5": 60.0,
+      "k2o": 40.0
+    },
+    "remainingSeasonKgHa": {
+      "n": 80.0,
+      "p2o5": 0.0,
+      "k2o": 0.0
+    },
+    "profileCode": "IRRIGATED_TIMELY_SOWN",
+    "profileName": "Irrigated, timely sown - NHZ, CZ, PZ, SHZ"
+  },
+  "plans": [
+    {
+      "strategy": "LOWEST_COST",
+      "label": "Lowest cost",
+      "description": "Cheapest combination that meets the requirement.",
+      "selected": true,
+      "feasible": true,
+      "items": [
+        {
+          "code": "UREA",
+          "name": "Urea",
+          "kgHa": 86.957,
+          "fieldKg": 173.914,
+          "bagKg": 45.0,
+          "fieldBags": 3.9,
+          "costPerHa": 514.79,
+          "fieldCost": 1029.57
+        }
+      ],
+      "suppliedKgHa": {
+        "n": 40.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "suppliedFieldKg": {
+        "n": 80.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "excessKgHa": {
+        "n": 0.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "totalExcessKgHa": 0.0,
+      "costPerHa": 514.79,
+      "fieldCost": 1029.57,
+      "totalMassKgHa": 86.957,
+      "totalMassFieldKg": 173.914,
+      "sameAs": [
+        "MIN_EXCESS",
+        "BALANCED"
+      ],
+      "yield": {
+        "available": true,
+        "predictedYieldTHa": 3.25,
+        "fieldProductionT": 6.5,
+        "extrapolation": false,
+        "clippedFeatures": [],
+        "seasonNutrientsKgHa": {
+          "n": 120.0,
+          "p2o5": 60.0,
+          "k2o": 40.0
+        }
+      },
+      "score": {
+        "expectedRevenuePerHa": 78812.5,
+        "fertilizerCostPerHa": 514.79,
+        "excessPenaltyPerHa": 0.0,
+        "scorePerHa": 78297.71,
+        "rank": 1
+      }
+    },
+    {
+      "strategy": "MIN_EXCESS",
+      "label": "Minimum excess",
+      "description": "Closest nutrient match: least N+P2O5+K2O beyond the requirement.",
+      "selected": false,
+      "feasible": true,
+      "items": [
+        {
+          "code": "UREA",
+          "name": "Urea",
+          "kgHa": 86.957,
+          "fieldKg": 173.914,
+          "bagKg": 45.0,
+          "fieldBags": 3.9,
+          "costPerHa": 514.79,
+          "fieldCost": 1029.57
+        }
+      ],
+      "suppliedKgHa": {
+        "n": 40.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "suppliedFieldKg": {
+        "n": 80.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "excessKgHa": {
+        "n": 0.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "totalExcessKgHa": 0.0,
+      "costPerHa": 514.79,
+      "fieldCost": 1029.57,
+      "totalMassKgHa": 86.957,
+      "totalMassFieldKg": 173.914,
+      "sameAs": [
+        "LOWEST_COST",
+        "BALANCED"
+      ],
+      "yield": {
+        "available": true,
+        "predictedYieldTHa": 3.25,
+        "fieldProductionT": 6.5,
+        "extrapolation": false,
+        "clippedFeatures": [],
+        "seasonNutrientsKgHa": {
+          "n": 120.0,
+          "p2o5": 60.0,
+          "k2o": 40.0
+        }
+      },
+      "score": {
+        "expectedRevenuePerHa": 78812.5,
+        "fertilizerCostPerHa": 514.79,
+        "excessPenaltyPerHa": 0.0,
+        "scorePerHa": 78297.71,
+        "rank": 2
+      }
+    },
+    {
+      "strategy": "BALANCED",
+      "label": "Balanced",
+      "description": "Least excess while spending at most half of the extra cost of the minimum-excess plan.",
+      "selected": false,
+      "feasible": true,
+      "items": [
+        {
+          "code": "UREA",
+          "name": "Urea",
+          "kgHa": 86.957,
+          "fieldKg": 173.914,
+          "bagKg": 45.0,
+          "fieldBags": 3.9,
+          "costPerHa": 514.79,
+          "fieldCost": 1029.57
+        }
+      ],
+      "suppliedKgHa": {
+        "n": 40.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "suppliedFieldKg": {
+        "n": 80.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "excessKgHa": {
+        "n": 0.0,
+        "p2o5": 0.0,
+        "k2o": 0.0
+      },
+      "totalExcessKgHa": 0.0,
+      "costPerHa": 514.79,
+      "fieldCost": 1029.57,
+      "totalMassKgHa": 86.957,
+      "totalMassFieldKg": 173.914,
+      "sameAs": [
+        "LOWEST_COST",
+        "MIN_EXCESS"
+      ],
+      "yield": {
+        "available": true,
+        "predictedYieldTHa": 3.25,
+        "fieldProductionT": 6.5,
+        "extrapolation": false,
+        "clippedFeatures": [],
+        "seasonNutrientsKgHa": {
+          "n": 120.0,
+          "p2o5": 60.0,
+          "k2o": 40.0
+        }
+      },
+      "score": {
+        "expectedRevenuePerHa": 78812.5,
+        "fertilizerCostPerHa": 514.79,
+        "excessPenaltyPerHa": 0.0,
+        "scorePerHa": 78297.71,
+        "rank": 3
+      }
+    }
+  ],
+  "selectedPlan": {
+    "strategy": "LOWEST_COST",
+    "label": "Lowest cost",
+    "reason": "LOWEST_COST has the highest score: 78297.71 INR/ha (expected revenue 78812.50 - fertilizer 514.79 - excess penalty 0.00). Tied on score with MIN_EXCESS, BALANCED; tie-break: equal score (to 0.01 INR/ha) -> lower cost -> lower total excess -> lower product mass -> LOWEST_COST, MIN_EXCESS, BALANCED."
+  },
+  "scoring": {
+    "mode": "REVENUE_MINUS_COST_AND_EXCESS",
+    "formula": "score (INR/ha) = predicted yield (t/ha) x crop price (INR/t) - fertilizer cost (INR/ha) - excess penalty (INR/kg) x total N+P2O5+K2O excess (kg/ha)",
+    "cropPriceInrPerTonne": 24250,
+    "cropPriceSource": "GoI MSP 2025-26, indicative",
+    "excessPenaltyInrPerKg": 20.0,
+    "tieBreak": "equal score (to 0.01 INR/ha) -> lower cost -> lower total excess -> lower product mass -> LOWEST_COST, MIN_EXCESS, BALANCED"
+  },
+  "yieldPrediction": {
+    "available": true,
+    "modelVersion": "yield-lds2018-xgboost-20260927",
+    "inputs": [
+      {
+        "feature": "crop",
+        "value": "WHEAT",
+        "source": "FIELD"
+      },
+      {
+        "feature": "state",
+        "value": "BIHAR",
+        "source": "MAPPED",
+        "note": "found in the farm location 'Patna, Bihar'"
+      },
+      {
+        "feature": "sowing_date",
+        "value": "2025-11-20",
+        "source": "FIELD"
+      },
+      {
+        "feature": "soil_texture",
+        "value": "LIGHT",
+        "source": "MAPPED",
+        "note": "from soil type 'Sandy loam'"
+      },
+      {
+        "feature": "irrigation_available",
+        "value": "true",
+        "source": "FIELD",
+        "note": "irrigation type IRRIGATED"
+      },
+      {
+        "feature": "variety_type",
+        "source": "NOT_RECORDED",
+        "note": "not stored; the model imputes the most frequent training value"
+      },
+      {
+        "feature": "previous_crop",
+        "value": "Rice",
+        "source": "FIELD",
+        "note": "grouped by the ML service (rice/wheat/fallow/pulse/maize/other)"
+      },
+      {
+        "feature": "fym_applied",
+        "value": "false",
+        "source": "PROTOTYPE_DEFAULT",
+        "note": "FYM use is not recorded; assumed none"
+      },
+      {
+        "feature": "zn_applied",
+        "value": "false",
+        "source": "DERIVED",
+        "note": "no candidate plan contains a zinc fertilizer (the catalogue has none)"
+      },
+      {
+        "feature": "n_kg_ha, p2o5_kg_ha, k2o_kg_ha",
+        "source": "DERIVED",
+        "note": "season totals per plan: already applied + this plan + later splits of the schedule"
+      }
+    ]
+  },
+  "infeasibility": [],
+  "warnings": [],
+  "assumptions": [
+    "General dose from profile IRRIGATED_TIMELY_SOWN [REFERENCED, source IIWBR_EB52]. Blanket recommendation, not a site-specific prescription.",
+    "Soil-test adjustment LOW x1.25, MEDIUM x1.0, HIGH x0.75 [PROTOTYPE_ASSUMPTION]. Not an STCR equation.",
+    "Soil N, P, K are read as plant-available kg/ha on the elemental basis; requirements are kg/ha of N, P2O5, K2O.",
+    "Carry-over from previous crops, organic manures and residues is not credited [PROTOTYPE_ASSUMPTION].",
+    "Stage mapping for TILLERING: Second irrigation; the source names the irrigation, we map it to TILLERING (first node ~45 days after sowing) [MAPPING_ASSUMPTION].",
+    "Per-product upper bound sent to the optimizer: 500 kg/ha (prototype tuning parameter).",
+    "Yield scenarios use season totals: nutrients already applied this season + the plan + later splits of the schedule (assumed applied as planned), because the model was trained on season totals.",
+    "Plan score: score (INR/ha) = predicted yield (t/ha) x crop price (INR/t) - fertilizer cost (INR/ha) - excess penalty (INR/kg) x total N+P2O5+K2O excess (kg/ha). Crop price 24250 INR/t (GoI MSP 2025-26, indicative); excess penalty 20 INR per kg of excess nutrient (prototype weight). The score only chooses among the optimizer's verified plans and never changes a plan."
+  ],
+  "knowledgeBase": {
+    "id": "agrioptima-nutrient-kb",
+    "version": "1.0.0",
+    "status": "PROTOTYPE"
+  },
+  "modelVersion": "yield-lds2018-xgboost-20260927",
+  "optimizerSolver": "scipy.optimize.linprog (highs-ds, SciPy 1.18.1)",
+  "disclaimer": "Prototype knowledge base for a hackathon decision-support tool. Values are general (blanket) recommendations taken from the cited public documents, or explicitly labelled assumptions. They are not site-specific advice and must be checked against the state package of practices, a soil-testing laboratory and a qualified agronomist."
+}

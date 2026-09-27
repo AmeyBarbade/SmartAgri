@@ -34,6 +34,25 @@ app:
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:720}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  ml:
+    # FastAPI ML service (Milestone 6). Internal URL; never returned to API clients.
+    base-url: ${ML_SERVICE_BASE_URL:http://localhost:8001}
+    connect-timeout: ${ML_SERVICE_CONNECT_TIMEOUT:2s}
+    read-timeout: ${ML_SERVICE_READ_TIMEOUT:15s}
+  recommendation:
+    # PROTOTYPE ASSUMPTIONS (docs/RECOMMENDATION_FLOW.md). Grain prices for expected revenue, INR per tonne:
+    # Government of India Minimum Support Prices 2025-26 (wheat RMS 2025-26 INR 2425/q; paddy common and maize
+    # KMS 2025-26 INR 2369/q and 2400/q). Indicative only: farm-gate prices differ.
+    crop-price-inr-per-tonne:
+      WHEAT: 24250
+      RICE: 23690
+      MAIZE: 24000
+    crop-price-source: "GoI MSP 2025-26, indicative"
+    # INR per kg of N + P2O5 + K2O supplied beyond the requirement (prototype weight; same order as the cost of
+    # buying a kg of nutrient, e.g. urea N ~ INR 12.9/kg).
+    excess-penalty-inr-per-kg: 20
+    # Per-product cap per application, kg/ha (the optimizer's prototype default).
+    max-kg-ha-per-product: 500
 
 springdoc:
   api-docs:

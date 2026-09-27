@@ -1,0 +1,198 @@
+{
+  "id": "agrioptima-nutrient-kb",
+  "version": "1.0.0",
+  "releasedOn": "2026-09-27",
+  "status": "PROTOTYPE",
+  "disclaimer": "Prototype knowledge base for a hackathon decision-support tool. Values are general (blanket) recommendations taken from the cited public documents, or explicitly labelled assumptions. They are not site-specific advice and must be checked against the state package of practices, a soil-testing laboratory and a qualified agronomist.",
+  "statusLegend": {
+    "REFERENCED": "Value copied from the cited source document (text retrieved and checked on 2026-09-27).",
+    "MAPPING_ASSUMPTION": "Value is from the cited source, but its timing was mapped by us onto the growth-stage list used in this application.",
+    "PROTOTYPE_ASSUMPTION": "Not taken from a verified source. Chosen for the prototype and documented as such.",
+    "DERIVED": "Computed from physical constants (no agronomic judgement)."
+  },
+  "units": {
+    "nutrientRequirement": "kg per hectare of N, P2O5 and K2O (oxide basis for P and K, the convention used on fertilizer bags)",
+    "soilTest": "kg per hectare of plant-available N, P and K on an ELEMENTAL basis (N, P, K), as recorded in soil_records",
+    "previousApplication": "kg of fertilizer PRODUCT applied to the whole field; converted with the product grade (% N, % P2O5, % K2O)"
+  },
+  "sources": [
+    {
+      "id": "IIWBR_EB52",
+      "citation": "Kumar A., Singh R., Singh G., Sharma R.K., Saharan M.S., Chhokar R.S., Tyagi B.S., Sendhil R., Chand R., Sharma I. Wheat Cultivation in India - Pocket Guide. Extension Bulletin 52. ICAR - Directorate of Wheat Research (now ICAR-IIWBR), Karnal.",
+      "url": "https://iiwbr.org.in/wp-content/uploads/2023/08/EB-52-Wheat-Cultivation-in-India-Pocket-Guide.pdf",
+      "accessed": "2026-09-27",
+      "usedFor": "Wheat doses by zone and sowing condition, N split (1/3 basal + 2 equal splits at 1st and 2nd irrigation), irrigation stages (CRI 21 DAS, first node 45 DAS)."
+    },
+    {
+      "id": "NRRI_CRP_PAGE",
+      "citation": "ICAR-National Rice Research Institute (NRRI), Cuttack - article on the ICAR-IIRR Consortia Research Platform website.",
+      "url": "https://icar-iirr.org/CRP/index.php/crparticles?view=article&id=24%3Arice-nrri&catid=9&showall=1",
+      "accessed": "2026-09-27",
+      "usedFor": "Rice dose 120:60:40 kg NPK/ha, described on the page as '100% of recommended inorganic fertilizer'. Ecosystem/fertility context is not stated in the retrieved text."
+    },
+    {
+      "id": "CRRI_FAQ",
+      "citation": "ICAR-Central Rice Research Institute (now NRRI), Cuttack - Frequently Asked Questions page.",
+      "url": "https://icar-crri.in/faq/",
+      "accessed": "2026-09-27",
+      "usedFor": "Rice doses: rainfed upland 40-20-20, lowland kharif irrigated 60-30-30, rabi 80-40-40, hybrid 100-60-60 kg N-P-K/ha."
+    },
+    {
+      "id": "TNAU_RICE_TRANSPLANTED",
+      "citation": "TNAU Agritech Portal - Crop Production: Rice, transplanted puddled lowland, main field nutrient management (inorganic). Tamil Nadu Agricultural University.",
+      "url": "https://agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice_tranpudlow_mainfield_nutrient_mgmt_inorganic.html",
+      "accessed": "2026-09-27",
+      "usedFor": "Rice split: 'Apply N and K in four equal splits viz., basal, tillering, panicle initiation and heading stages'; P basal. Tamil Nadu doses 150:50:50 (varieties) and 175:60:60 (hybrid)."
+    },
+    {
+      "id": "TN_CPG_MAIZE",
+      "citation": "Crop Production Guide (Government of Tamil Nadu / TNAU), chapter (i) Maize.",
+      "url": "https://tnagriculture.in/dashboard/CPG/02_%20Maize.pdf",
+      "accessed": "2026-09-27",
+      "usedFor": "Irrigated maize blanket doses 135:62.5:50 (varieties) and 250:75:75 (hybrids); 1/4 N + full P and K basal, 1/2 N on 25th day, 1/4 N on 45th day. Rainfed maize 60:30:30 (Alfisols) and 40:20:0 (Vertisols); half N + full P and K basal, half N at tasseling."
+    },
+    {
+      "id": "DESHMUKH_2022_RATINGS",
+      "citation": "Deshmukh S.V. et al. (2022). The Pharma Innovation Journal 11(12): 1987-1990, Table 2 'Rating chart of electrochemical properties and macronutrient in soil', citing Muhr et al. (1965) 'Soil Testing in India' (USAID, New Delhi) and Arora (2002).",
+      "url": "https://www.thepharmajournal.com/archives/2022/vol11issue12/PartY/11-12-312-270.pdf",
+      "accessed": "2026-09-27",
+      "usedFor": "Soil fertility classes: available N <280 / 280-560 / >560, P <10 / 10-25 / >25, K <118 / 118-280 / >280 kg/ha; organic carbon <0.5 / 0.5-1.0 / >1.0 %; pH classes (strongly acid <5.5, strongly alkaline above the 7.5-8.5 band)."
+    },
+    {
+      "id": "IUPAC_ATOMIC_WEIGHTS",
+      "citation": "IUPAC standard atomic weights: P 30.973762, K 39.0983, O 15.999.",
+      "url": "https://iupac.qmul.ac.uk/AtWt/",
+      "accessed": "2026-09-27",
+      "usedFor": "Elemental-to-oxide conversion factors P -> P2O5 and K -> K2O (computed in code)."
+    }
+  ],
+  "soilTest": {
+    "basis": "ELEMENTAL",
+    "ratings": {
+      "N": { "lowBelow": 280, "highAbove": 560, "status": "REFERENCED", "sourceId": "DESHMUKH_2022_RATINGS", "use": "fertility class -> adjustment factor for N" },
+      "P": { "lowBelow": 10, "highAbove": 25, "status": "REFERENCED", "sourceId": "DESHMUKH_2022_RATINGS", "use": "fertility class -> adjustment factor for P2O5" },
+      "K": { "lowBelow": 118, "highAbove": 280, "status": "REFERENCED", "sourceId": "DESHMUKH_2022_RATINGS", "use": "fertility class -> adjustment factor for K2O" }
+    },
+    "ratingNotes": "Boundaries are inclusive in the MEDIUM class (e.g. N = 280 or 560 is MEDIUM). The cited table does not state explicitly whether P and K are elemental or oxide; we read them as elemental, matching how soil_records stores values [PROTOTYPE_ASSUMPTION]. Other Indian sources use slightly different limits (e.g. K 108 instead of 118, organic carbon 0.75 % instead of 1.0 %).",
+    "adjustmentFactors": {
+      "LOW": 1.25,
+      "MEDIUM": 1.00,
+      "HIGH": 0.75,
+      "status": "PROTOTYPE_ASSUMPTION",
+      "note": "MEDIUM fertility is treated as equal to the general recommendation; LOW increases and HIGH decreases each nutrient's dose by 25 %. A soil-test-rating adjustment of this kind is described in secondary literature on Indian soil-testing practice (reported as 25-30 %), but we could not retrieve a primary source for the exact percentage, so it is an assumption. It is NOT a soil-test crop response (STCR) equation; STCR coefficients are location-specific and are not used."
+    },
+    "organicCarbonPercent": { "lowBelow": 0.5, "highAbove": 1.0, "status": "REFERENCED", "sourceId": "DESHMUKH_2022_RATINGS", "use": "reported only; does not change the calculation" },
+    "ph": {
+      "stronglyAcidBelow": 5.5,
+      "stronglyAlkalineAbove": 8.5,
+      "status": "REFERENCED",
+      "sourceId": "DESHMUKH_2022_RATINGS",
+      "use": "warnings only; does not change the calculation"
+    },
+    "maxAgeDays": { "value": 1095, "status": "PROTOTYPE_ASSUMPTION", "note": "Soil tests older than 3 years produce a warning." }
+  },
+  "previousApplications": {
+    "windowDaysBeforeSowing": { "value": 30, "status": "PROTOTYPE_ASSUMPTION", "note": "Applications from 30 days before the sowing date up to today count toward this crop (covers pre-plant basal doses)." },
+    "fallbackLookbackDays": { "value": 150, "status": "PROTOTYPE_ASSUMPTION", "note": "If the field has no sowing date, applications in the last 150 days count." },
+    "carryOver": "Nutrients from earlier crops, organic manures and residual fertilizer are NOT credited [PROTOTYPE_ASSUMPTION]."
+  },
+  "crops": [
+    {
+      "code": "WHEAT",
+      "defaultProfile": "IRRIGATED_TIMELY_SOWN",
+      "rainfedProfile": "RAINFED",
+      "lateSownProfile": "IRRIGATED_LATE_SOWN",
+      "lateSowingAfter": { "month": 11, "day": 25, "status": "REFERENCED", "sourceId": "IIWBR_EB52", "note": "'Irrigated, late sown (After 25th Nov.)' for NHZ, NWPZ and NEPZ. CZ/PZ/SHZ define late sowing slightly later; one threshold is used for all zones [PROTOTYPE_ASSUMPTION]." },
+      "profiles": [
+        { "code": "IRRIGATED_TIMELY_SOWN", "description": "Irrigated, timely sown - NHZ, CZ, PZ, SHZ", "target": { "n": 120, "p2o5": 60, "k2o": 40 }, "schedule": "WHEAT_IRRIGATED", "status": "REFERENCED", "sourceId": "IIWBR_EB52" },
+        { "code": "IRRIGATED_TIMELY_SOWN_NWPZ_NEPZ", "description": "Irrigated, timely sown - North Western / North Eastern Plains Zone (Punjab, Haryana, W & E UP, Bihar, WB, ...)", "target": { "n": 150, "p2o5": 60, "k2o": 40 }, "schedule": "WHEAT_IRRIGATED", "status": "REFERENCED", "sourceId": "IIWBR_EB52" },
+        { "code": "IRRIGATED_LATE_SOWN", "description": "Irrigated, late sown - NHZ, CZ, PZ, SHZ", "target": { "n": 90, "p2o5": 60, "k2o": 40 }, "schedule": "WHEAT_IRRIGATED", "status": "REFERENCED", "sourceId": "IIWBR_EB52" },
+        { "code": "IRRIGATED_LATE_SOWN_NWPZ_NEPZ", "description": "Irrigated, late sown - NWPZ / NEPZ", "target": { "n": 120, "p2o5": 60, "k2o": 40 }, "schedule": "WHEAT_IRRIGATED", "status": "REFERENCED", "sourceId": "IIWBR_EB52" },
+        { "code": "RAINFED", "description": "Rainfed (all zones)", "target": { "n": 60, "p2o5": 30, "k2o": 20 }, "schedule": "WHEAT_RAINFED", "status": "REFERENCED", "sourceId": "IIWBR_EB52" }
+      ],
+      "schedules": [
+        {
+          "code": "WHEAT_IRRIGATED",
+          "splits": [
+            { "stage": "SOWING", "n": "1/3", "p2o5": "1", "k2o": "1", "timing": "Basal at sowing", "status": "REFERENCED" },
+            { "stage": "CRI", "n": "1/3", "p2o5": "0", "k2o": "0", "timing": "First irrigation (crown root initiation, ~21 days after sowing)", "status": "REFERENCED" },
+            { "stage": "TILLERING", "n": "1/3", "p2o5": "0", "k2o": "0", "timing": "Second irrigation; the source names the irrigation, we map it to TILLERING (first node ~45 days after sowing)", "status": "MAPPING_ASSUMPTION" }
+          ],
+          "sourceId": "IIWBR_EB52",
+          "note": null
+        },
+        {
+          "code": "WHEAT_RAINFED",
+          "splits": [
+            { "stage": "SOWING", "n": "1", "p2o5": "1", "k2o": "1", "timing": "All at sowing", "status": "REFERENCED" }
+          ],
+          "sourceId": "IIWBR_EB52",
+          "note": null
+        }
+      ]
+    },
+    {
+      "code": "RICE",
+      "defaultProfile": "NRRI_GENERAL",
+      "rainfedProfile": "CRRI_RAINFED_UPLAND",
+      "lateSownProfile": null,
+      "lateSowingAfter": null,
+      "profiles": [
+        { "code": "NRRI_GENERAL", "description": "ICAR-NRRI '100% recommended inorganic fertilizer' dose (context not stated in the retrieved text)", "target": { "n": 120, "p2o5": 60, "k2o": 40 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "NRRI_CRP_PAGE" },
+        { "code": "CRRI_LOWLAND_KHARIF_IRRIGATED", "description": "Lowland kharif irrigated rice (ICAR-CRRI FAQ)", "target": { "n": 60, "p2o5": 30, "k2o": 30 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "CRRI_FAQ" },
+        { "code": "CRRI_RABI", "description": "Rabi rice (ICAR-CRRI FAQ)", "target": { "n": 80, "p2o5": 40, "k2o": 40 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "CRRI_FAQ" },
+        { "code": "CRRI_HYBRID", "description": "Hybrid rice (ICAR-CRRI FAQ)", "target": { "n": 100, "p2o5": 60, "k2o": 60 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "CRRI_FAQ" },
+        { "code": "CRRI_RAINFED_UPLAND", "description": "Unfavourable rainfed upland rice (ICAR-CRRI FAQ)", "target": { "n": 40, "p2o5": 20, "k2o": 20 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "CRRI_FAQ" },
+        { "code": "TNAU_TRANSPLANTED_TN", "description": "Transplanted rice, Tamil Nadu blanket recommendation (TNAU)", "target": { "n": 150, "p2o5": 50, "k2o": 50 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "TNAU_RICE_TRANSPLANTED" },
+        { "code": "TNAU_HYBRID_TN", "description": "Hybrid rice, Tamil Nadu blanket recommendation (TNAU)", "target": { "n": 175, "p2o5": 60, "k2o": 60 }, "schedule": "RICE_FOUR_SPLITS", "status": "REFERENCED", "sourceId": "TNAU_RICE_TRANSPLANTED" }
+      ],
+      "schedules": [
+        {
+          "code": "RICE_FOUR_SPLITS",
+          "splits": [
+            { "stage": "ESTABLISHMENT", "n": "1/4", "p2o5": "1", "k2o": "1/4", "timing": "Basal at transplanting / sowing", "status": "REFERENCED" },
+            { "stage": "TILLERING", "n": "1/4", "p2o5": "0", "k2o": "1/4", "timing": "Tillering", "status": "REFERENCED" },
+            { "stage": "PANICLE_INITIATION", "n": "1/4", "p2o5": "0", "k2o": "1/4", "timing": "Panicle initiation", "status": "REFERENCED" },
+            { "stage": "FLOWERING", "n": "1/4", "p2o5": "0", "k2o": "1/4", "timing": "Heading", "status": "REFERENCED" }
+          ],
+          "sourceId": "TNAU_RICE_TRANSPLANTED",
+          "note": "Split pattern is TNAU's (transplanted lowland rice). It is applied to every rice profile, including those whose dose comes from ICAR-NRRI/CRRI, and to upland rice where a transplanted-rice split may not fit [PROTOTYPE_ASSUMPTION]."
+        }
+      ]
+    },
+    {
+      "code": "MAIZE",
+      "defaultProfile": "TN_IRRIGATED_VARIETY",
+      "rainfedProfile": "TN_RAINFED_ALFISOL",
+      "lateSownProfile": null,
+      "lateSowingAfter": null,
+      "profiles": [
+        { "code": "TN_IRRIGATED_VARIETY", "description": "Irrigated maize, varieties - Tamil Nadu blanket recommendation", "target": { "n": 135, "p2o5": 62.5, "k2o": 50 }, "schedule": "MAIZE_IRRIGATED", "status": "REFERENCED", "sourceId": "TN_CPG_MAIZE" },
+        { "code": "TN_IRRIGATED_HYBRID", "description": "Irrigated maize, hybrids - Tamil Nadu blanket recommendation (high compared with other states)", "target": { "n": 250, "p2o5": 75, "k2o": 75 }, "schedule": "MAIZE_IRRIGATED", "status": "REFERENCED", "sourceId": "TN_CPG_MAIZE" },
+        { "code": "TN_RAINFED_ALFISOL", "description": "Rainfed maize on Alfisols - Tamil Nadu", "target": { "n": 60, "p2o5": 30, "k2o": 30 }, "schedule": "MAIZE_RAINFED", "status": "REFERENCED", "sourceId": "TN_CPG_MAIZE" },
+        { "code": "TN_RAINFED_VERTISOL", "description": "Rainfed maize on Vertisols - Tamil Nadu", "target": { "n": 40, "p2o5": 20, "k2o": 0 }, "schedule": "MAIZE_RAINFED", "status": "REFERENCED", "sourceId": "TN_CPG_MAIZE" }
+      ],
+      "schedules": [
+        {
+          "code": "MAIZE_IRRIGATED",
+          "splits": [
+            { "stage": "SOWING", "n": "1/4", "p2o5": "1", "k2o": "1", "timing": "Basal before sowing", "status": "REFERENCED" },
+            { "stage": "KNEE_HIGH", "n": "1/2", "p2o5": "0", "k2o": "0", "timing": "25th day after sowing, mapped to KNEE_HIGH", "status": "MAPPING_ASSUMPTION" },
+            { "stage": "TASSELING", "n": "1/4", "p2o5": "0", "k2o": "0", "timing": "45th day after sowing (before tasseling), mapped to TASSELING", "status": "MAPPING_ASSUMPTION" }
+          ],
+          "sourceId": "TN_CPG_MAIZE",
+          "note": null
+        },
+        {
+          "code": "MAIZE_RAINFED",
+          "splits": [
+            { "stage": "SOWING", "n": "1/2", "p2o5": "1", "k2o": "1", "timing": "Basal", "status": "REFERENCED" },
+            { "stage": "TASSELING", "n": "1/2", "p2o5": "0", "k2o": "0", "timing": "Top dress at tasseling", "status": "REFERENCED" }
+          ],
+          "sourceId": "TN_CPG_MAIZE",
+          "note": null
+        }
+      ]
+    }
+  ]
+}

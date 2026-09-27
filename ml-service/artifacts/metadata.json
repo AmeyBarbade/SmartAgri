@@ -1,0 +1,555 @@
+{
+  "model_version": "yield-lds2018-xgboost-20260927",
+  "trained_at": "2026-09-27T10:47:31+00:00",
+  "git": {
+    "commit": "d4623a7",
+    "ml_code_uncommitted": true
+  },
+  "data_label": "Real public survey data (CIMMYT CSISA Landscape Diagnostic Survey 2018, farmer-reported yield). Observational, not a controlled fertilizer trial.",
+  "problem": "regression: grain yield (t/ha) for a candidate fertilizer scenario",
+  "target": {
+    "name": "yield_t_ha",
+    "unit": "t/ha",
+    "definition": "farmer-reported grain production of the largest plot / plot area (survey field L-tonPerHectare)"
+  },
+  "algorithm": "xgboost",
+  "hyperparameters": {
+    "learning_rate": 0.03,
+    "max_depth": 5,
+    "min_child_weight": 20,
+    "n_estimators": 300
+  },
+  "features": {
+    "all": [
+      "n_kg_ha",
+      "p2o5_kg_ha",
+      "k2o_kg_ha",
+      "sowing_day",
+      "zn_applied",
+      "irrigation_available",
+      "fym_applied",
+      "crop",
+      "state",
+      "soil_texture",
+      "variety_type",
+      "previous_crop"
+    ],
+    "numeric": [
+      "n_kg_ha",
+      "p2o5_kg_ha",
+      "k2o_kg_ha",
+      "sowing_day"
+    ],
+    "binary": [
+      "zn_applied",
+      "irrigation_available",
+      "fym_applied"
+    ],
+    "categorical": [
+      "crop",
+      "state",
+      "soil_texture",
+      "variety_type",
+      "previous_crop"
+    ],
+    "scenario": [
+      "n_kg_ha",
+      "p2o5_kg_ha",
+      "k2o_kg_ha",
+      "zn_applied"
+    ],
+    "categories": {
+      "crop": [
+        "WHEAT",
+        "RICE"
+      ],
+      "state": [
+        "ANDHRA_PRADESH",
+        "BIHAR",
+        "CHHATTISGARH",
+        "HARYANA",
+        "ODISHA",
+        "PUNJAB",
+        "UTTAR_PRADESH",
+        "WEST_BENGAL"
+      ],
+      "soil_texture": [
+        "LIGHT",
+        "MEDIUM",
+        "HEAVY"
+      ],
+      "variety_type": [
+        "IMPROVED",
+        "HYBRID",
+        "LOCAL"
+      ],
+      "previous_crop": [
+        "RICE",
+        "WHEAT",
+        "FALLOW",
+        "PULSE",
+        "MAIZE",
+        "OTHER"
+      ]
+    }
+  },
+  "supported_crops": [
+    "WHEAT",
+    "RICE"
+  ],
+  "supported_ranges": {
+    "WHEAT": {
+      "n_kg_ha": [
+        27.02,
+        217.38
+      ],
+      "p2o5_kg_ha": [
+        0.0,
+        113.67
+      ],
+      "k2o_kg_ha": [
+        0.0,
+        67.41
+      ],
+      "sowing_day": [
+        33.0,
+        96.0
+      ]
+    },
+    "RICE": {
+      "n_kg_ha": [
+        0.0,
+        288.02
+      ],
+      "p2o5_kg_ha": [
+        0.0,
+        190.11
+      ],
+      "k2o_kg_ha": [
+        0.0,
+        176.88
+      ],
+      "sowing_day": [
+        34.0,
+        121.8
+      ]
+    }
+  },
+  "leakage_excluded_fields": {
+    "L-tonPerHectare": "target itself",
+    "L-quintalPerAcre": "target in other units",
+    "L-q605_totalGrainYieldQUINTAL": "harvest outcome (production)",
+    "L-q606_largestPlotYieldQUNITAL": "harvest outcome (production of the plot)",
+    "B-grainYield_tonPerHa": "crop-cut yield (outcome)",
+    "L-q601_harvestDate": "known only at harvest",
+    "L-cropDurationDays": "sowing-to-harvest duration, known only at harvest",
+    "L-q602_harvestMethod": "harvest-time practice",
+    "L-q604_threshing": "post-harvest practice",
+    "L-q607_farmGatePrice": "post-harvest market outcome",
+    "L-q608_fiveYearGProd": "farmer's post-harvest judgement of this season's yield",
+    "I-q5501_droughtGS": "in-season weather outcome",
+    "I-q5502_droughtSeverity": "in-season weather outcome",
+    "I-q5503_floodGS": "in-season weather outcome",
+    "I-q5504_floodSeverity": "in-season weather outcome",
+    "I-q5505_weedSeverity": "in-season outcome",
+    "I-q5506_insectSeverity": "in-season outcome",
+    "I-q5509_diseaseSeverity": "in-season outcome",
+    "I-q5512_lodgingPercent": "in-season outcome, strongly tied to final yield",
+    "G-q5305_irrigTimes": "number of irrigations reacts to the season's rainfall (weather outcome)",
+    "J-herbAppTimes": "reactive in-season management (depends on observed weed pressure)",
+    "J-manualWeedTimes": "reactive in-season management (depends on observed weed pressure)",
+    "F-q5287_fertOnTime": "whether fertilizer arrived on time, only known during the season",
+    "F-q5288_avgDelayWeeks": "fertilizer delay, only known during the season",
+    "M-q706_cropSP": "sale price, post-harvest",
+    "M-q707_cropAvgSP": "sale price, post-harvest",
+    "collectionDate": "interview date, after harvest",
+    "deviceid": "enumerator device, not an agronomic variable (can encode interviewer bias)"
+  },
+  "datasets": [
+    {
+      "key": "lds_wheat_2018",
+      "title": "Landscape diagnostic survey data of wheat production practices and yield of 2018 from eastern India",
+      "handle": "hdl:11529/10548507",
+      "url": "https://data.cimmyt.org/api/access/datafile/58463",
+      "version": "2.0",
+      "released": "2024-01-30",
+      "md5": "26b075c43ab9f84fc9520e82e11e612f",
+      "paper": "Ajay et al., Open Data Journal for Agricultural Research, doi:10.18174/odjar.v7i0.17959",
+      "licence": "Data paper CC BY 4.0; Dataverse record states CIMMYT policy (cite, contact authors for other uses)"
+    },
+    {
+      "key": "lds_rice_2018",
+      "title": "Large-scale data of crop production practices applied by farmers on their largest rice plot during 2018 in eight Indian states",
+      "handle": "hdl:11529/10548656",
+      "url": "https://data.cimmyt.org/api/access/datafile/20843",
+      "version": "3.0",
+      "released": "2022-08-26",
+      "md5": "d61e6fe94d20e5a8362d1d9943c8fdb8",
+      "paper": "Ajay et al. (2022), Data in Brief, PMC9679526 (CC BY 4.0)",
+      "licence": "Data paper CC BY 4.0; Dataverse record states CIMMYT policy (cite, contact authors for other uses)"
+    }
+  ],
+  "processed_data": {
+    "file": "lds_wheat_rice_2018.csv",
+    "md5": "b41094e485247f34ffcf9f38905082bf",
+    "rows": 15399
+  },
+  "split": {
+    "method": "GroupShuffleSplit by district, per crop",
+    "test_fraction_of_districts": 0.2,
+    "train_rows": 12250,
+    "test_rows": 3149,
+    "train_districts": 70,
+    "test_districts": 18,
+    "test_districts_list": [
+      "lds_rice_2018:BARDDHAMAN",
+      "lds_rice_2018:GAZIPUR",
+      "lds_rice_2018:KURNOOL",
+      "lds_rice_2018:MADHUBANI",
+      "lds_rice_2018:MAHARAJGANJ",
+      "lds_rice_2018:MALDAH",
+      "lds_rice_2018:MEDINIPUR",
+      "lds_rice_2018:RAIPUR",
+      "lds_rice_2018:SANGRUR",
+      "lds_rice_2018:SOUTH24PARGANAS",
+      "lds_wheat_2018:BALIA",
+      "lds_wheat_2018:GAYA",
+      "lds_wheat_2018:GORAKHPUR",
+      "lds_wheat_2018:JEHANABAD",
+      "lds_wheat_2018:KHAGARIA",
+      "lds_wheat_2018:MUZAFFARPUR",
+      "lds_wheat_2018:NALANDA",
+      "lds_wheat_2018:SUPAUL"
+    ]
+  },
+  "cross_validation": {
+    "method": "GroupKFold(5, shuffle=True) by district on the training split",
+    "selection_metric": "mean CV RMSE (lowest wins)"
+  },
+  "random_seed": 42,
+  "metrics": {
+    "baseline_crop_mean": {
+      "test": {
+        "mae": 1.024,
+        "rmse": 1.4067,
+        "r2": 0.299,
+        "n": 3149
+      }
+    },
+    "linear_regression": {
+      "cv": {
+        "rmse_mean": 1.0303,
+        "rmse_std": 0.041,
+        "mae_mean": 0.7915,
+        "r2_mean": 0.4649,
+        "r2_std": 0.0642
+      },
+      "test": {
+        "mae": 0.8221,
+        "rmse": 1.0611,
+        "r2": 0.6011,
+        "n": 3149
+      },
+      "test_by_crop": {
+        "WHEAT": {
+          "mae": 0.5663,
+          "rmse": 0.732,
+          "r2": 0.2577,
+          "n": 1613
+        },
+        "RICE": {
+          "mae": 1.0907,
+          "rmse": 1.3212,
+          "r2": 0.4262,
+          "n": 1536
+        }
+      },
+      "best_params": {},
+      "grid": {},
+      "fit_seconds": 0.3
+    },
+    "decision_tree": {
+      "cv": {
+        "rmse_mean": 1.0859,
+        "rmse_std": 0.046,
+        "mae_mean": 0.8209,
+        "r2_mean": 0.403,
+        "r2_std": 0.0929
+      },
+      "test": {
+        "mae": 0.8808,
+        "rmse": 1.1387,
+        "r2": 0.5407,
+        "n": 3149
+      },
+      "test_by_crop": {
+        "WHEAT": {
+          "mae": 0.5714,
+          "rmse": 0.737,
+          "r2": 0.2475,
+          "n": 1613
+        },
+        "RICE": {
+          "mae": 1.2057,
+          "rmse": 1.4449,
+          "r2": 0.3137,
+          "n": 1536
+        }
+      },
+      "best_params": {
+        "max_depth": 8,
+        "min_samples_leaf": 50
+      },
+      "grid": {
+        "max_depth": [
+          4,
+          6,
+          8,
+          10
+        ],
+        "min_samples_leaf": [
+          20,
+          50,
+          100
+        ]
+      },
+      "fit_seconds": 3.8
+    },
+    "random_forest": {
+      "cv": {
+        "rmse_mean": 1.0312,
+        "rmse_std": 0.0296,
+        "mae_mean": 0.7813,
+        "r2_mean": 0.4627,
+        "r2_std": 0.0713
+      },
+      "test": {
+        "mae": 0.8344,
+        "rmse": 1.0807,
+        "r2": 0.5862,
+        "n": 3149
+      },
+      "test_by_crop": {
+        "WHEAT": {
+          "mae": 0.553,
+          "rmse": 0.7186,
+          "r2": 0.2845,
+          "n": 1613
+        },
+        "RICE": {
+          "mae": 1.1298,
+          "rmse": 1.361,
+          "r2": 0.3911,
+          "n": 1536
+        }
+      },
+      "best_params": {
+        "max_depth": 16,
+        "max_features": 0.33,
+        "min_samples_leaf": 10
+      },
+      "grid": {
+        "max_depth": [
+          10,
+          16
+        ],
+        "min_samples_leaf": [
+          10,
+          30
+        ],
+        "max_features": [
+          0.33,
+          0.6
+        ]
+      },
+      "fit_seconds": 39.4
+    },
+    "xgboost": {
+      "cv": {
+        "rmse_mean": 1.022,
+        "rmse_std": 0.0276,
+        "mae_mean": 0.7751,
+        "r2_mean": 0.4717,
+        "r2_std": 0.0743
+      },
+      "test": {
+        "mae": 0.851,
+        "rmse": 1.1045,
+        "r2": 0.5678,
+        "n": 3149
+      },
+      "test_by_crop": {
+        "WHEAT": {
+          "mae": 0.5502,
+          "rmse": 0.7133,
+          "r2": 0.2951,
+          "n": 1613
+        },
+        "RICE": {
+          "mae": 1.1669,
+          "rmse": 1.4024,
+          "r2": 0.3536,
+          "n": 1536
+        }
+      },
+      "best_params": {
+        "learning_rate": 0.03,
+        "max_depth": 5,
+        "min_child_weight": 20,
+        "n_estimators": 300
+      },
+      "grid": {
+        "n_estimators": [
+          300,
+          600
+        ],
+        "max_depth": [
+          3,
+          5
+        ],
+        "learning_rate": [
+          0.03,
+          0.06
+        ],
+        "min_child_weight": [
+          5,
+          20
+        ]
+      },
+      "fit_seconds": 98.0
+    }
+  },
+  "selected_model_random_kfold_cv": {
+    "rmse_mean": 0.8654,
+    "r2_mean": 0.6323,
+    "note": "rows shuffled across districts; optimistic, shown only to quantify spatial leakage"
+  },
+  "permutation_importance_test": [
+    {
+      "feature": "crop",
+      "rmse_increase": 0.623,
+      "std": 0.0149
+    },
+    {
+      "feature": "state",
+      "rmse_increase": 0.2466,
+      "std": 0.0073
+    },
+    {
+      "feature": "sowing_day",
+      "rmse_increase": 0.0776,
+      "std": 0.0042
+    },
+    {
+      "feature": "n_kg_ha",
+      "rmse_increase": 0.0511,
+      "std": 0.0042
+    },
+    {
+      "feature": "p2o5_kg_ha",
+      "rmse_increase": 0.0186,
+      "std": 0.002
+    },
+    {
+      "feature": "k2o_kg_ha",
+      "rmse_increase": 0.0137,
+      "std": 0.0021
+    },
+    {
+      "feature": "variety_type",
+      "rmse_increase": 0.0069,
+      "std": 0.0006
+    },
+    {
+      "feature": "previous_crop",
+      "rmse_increase": 0.0048,
+      "std": 0.0024
+    },
+    {
+      "feature": "irrigation_available",
+      "rmse_increase": 0.0047,
+      "std": 0.0014
+    },
+    {
+      "feature": "fym_applied",
+      "rmse_increase": 0.0016,
+      "std": 0.0006
+    },
+    {
+      "feature": "zn_applied",
+      "rmse_increase": 0.0008,
+      "std": 0.0004
+    },
+    {
+      "feature": "soil_texture",
+      "rmse_increase": -0.004,
+      "std": 0.0015
+    }
+  ],
+  "fertilizer_partial_dependence_test": {
+    "WHEAT": {
+      "n_kg_ha": {
+        "0": 2.38,
+        "40": 2.469,
+        "80": 2.953,
+        "120": 3.046,
+        "160": 3.157,
+        "200": 3.232
+      },
+      "p2o5_kg_ha": {
+        "0": 3.008,
+        "40": 2.975,
+        "80": 3.181,
+        "120": 3.129,
+        "160": 3.254,
+        "200": 3.441
+      },
+      "k2o_kg_ha": {
+        "0": 3.017,
+        "40": 3.059,
+        "80": 3.129,
+        "120": 3.156,
+        "160": 3.126,
+        "200": 3.126
+      }
+    },
+    "RICE": {
+      "n_kg_ha": {
+        "0": 4.382,
+        "40": 4.223,
+        "80": 4.37,
+        "120": 4.485,
+        "160": 4.789,
+        "200": 4.857
+      },
+      "p2o5_kg_ha": {
+        "0": 4.532,
+        "40": 4.508,
+        "80": 4.555,
+        "120": 4.539,
+        "160": 4.688,
+        "200": 4.877
+      },
+      "k2o_kg_ha": {
+        "0": 4.427,
+        "40": 4.603,
+        "80": 4.642,
+        "120": 4.682,
+        "160": 4.657,
+        "200": 4.657
+      }
+    }
+  },
+  "artifact": {
+    "file": "yield_model.joblib",
+    "sha256": "17284e7a939c46fc97e0f28faf78ebe4b91591005efba64bfb219c474dc41059",
+    "bytes": 192201
+  },
+  "environment": {
+    "python": "3.13.11",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.4.1",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

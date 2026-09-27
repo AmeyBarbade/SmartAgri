@@ -1,0 +1,339 @@
+{
+  "datasets": {
+    "lds_wheat_2018": {
+      "rows": 7648,
+      "columns": 315,
+      "fully_empty_columns": 64,
+      "exact_duplicate_rows": 0,
+      "has_record_key": true,
+      "missing_in_used_columns": {
+        "A-q102_state": 0,
+        "A-q103_district": 0,
+        "A-q117_season": 0,
+        "C-q306_cropLarestAreaAcre": 0,
+        "D-q401_soilTexture": 0,
+        "D-q409_varType": 0,
+        "D-prevCrop": 0,
+        "D-q415_seedingSowingTransDate": 0,
+        "E-q5101_FYM": 0,
+        "G-q5301_irrigAvail": 0,
+        "F-q51071_gradeNPK": 7429,
+        "F-q51211_gradeNPKS": 7609,
+        "L-tonPerHectare": 0
+      },
+      "application_columns": {
+        "DAP": 4,
+        "NPK": 4,
+        "Urea": 4,
+        "NPKS": 4,
+        "MoP": 4,
+        "SSP": 4,
+        "TSP": 4,
+        "ZnSO4": 4
+      },
+      "users_per_product": {
+        "DAP": 7145,
+        "NPK": 227,
+        "Urea": 7615,
+        "NPKS": 39,
+        "MoP": 4601,
+        "SSP": 96,
+        "TSP": 6,
+        "ZnSO4": 878
+      },
+      "total_vs_application_mismatch": {
+        "DAP": 193,
+        "NPK": 2,
+        "Urea": 179,
+        "NPKS": 0,
+        "MoP": 9,
+        "SSP": 0,
+        "TSP": 0,
+        "ZnSO4": 2
+      },
+      "crop_cut_check": {
+        "plots_with_crop_cut": 302,
+        "pearson_r_farmer_vs_crop_cut": 0.559,
+        "mean_crop_cut_t_ha": 3.473,
+        "mean_farmer_reported_t_ha": 3.208
+      },
+      "source": "https://data.cimmyt.org/api/access/datafile/58463",
+      "handle": "hdl:11529/10548507",
+      "version": "2.0",
+      "md5": "26b075c43ab9f84fc9520e82e11e612f"
+    },
+    "lds_rice_2018": {
+      "rows": 8355,
+      "columns": 218,
+      "fully_empty_columns": 5,
+      "exact_duplicate_rows": 194,
+      "has_record_key": false,
+      "missing_in_used_columns": {
+        "A-q102_state": 0,
+        "A-q103_district": 0,
+        "A-q117_season": 0,
+        "C-q306_cropLarestAreaAcre": 0,
+        "D-q401_soilTexture": 0,
+        "D-q409_varType": 0,
+        "D-prevCrop": 0,
+        "D-q415_seedingSowingTransDate": 0,
+        "E-q5101_FYM": 0,
+        "G-q5301_irrigAvail": 0,
+        "F-q51071_gradeNPK": 7253,
+        "F-q51211_gradeNPKS": 8059,
+        "L-tonPerHectare": 0
+      },
+      "application_columns": {
+        "DAP": 4,
+        "NPK": 4,
+        "Urea": 4,
+        "NPKS": 4,
+        "MoP": 4,
+        "SSP": 4,
+        "TSP": 4,
+        "ZnSO4": 4
+      },
+      "users_per_product": {
+        "DAP": 6106,
+        "NPK": 1254,
+        "Urea": 8128,
+        "NPKS": 299,
+        "MoP": 4327,
+        "SSP": 816,
+        "TSP": 18,
+        "ZnSO4": 1517
+      },
+      "source": "https://data.cimmyt.org/api/access/datafile/20843",
+      "handle": "hdl:11529/10548656",
+      "version": "3.0",
+      "md5": "d61e6fe94d20e5a8362d1d9943c8fdb8"
+    }
+  },
+  "cleaning": {
+    "rows_before": 16003,
+    "rules": [
+      {
+        "rule": "exact duplicate survey rows",
+        "removed": 194,
+        "removed_by_crop": {
+          "RICE": 194
+        }
+      },
+      {
+        "rule": "main season only (wheat rabi; rice kharif/aman)",
+        "removed": 302,
+        "removed_by_crop": {
+          "RICE": 297,
+          "WHEAT": 5
+        }
+      },
+      {
+        "rule": "target present",
+        "removed": 0,
+        "removed_by_crop": {}
+      },
+      {
+        "rule": "yield within (0.3, 10.0) t/ha",
+        "removed": 2,
+        "removed_by_crop": {
+          "WHEAT": 1,
+          "RICE": 1
+        }
+      },
+      {
+        "rule": "plot area >= 0.02 ha",
+        "removed": 26,
+        "removed_by_crop": {
+          "WHEAT": 20,
+          "RICE": 6
+        }
+      },
+      {
+        "rule": "sowing/transplanting date parsed and inside the crop's season window",
+        "removed": 48,
+        "removed_by_crop": {
+          "RICE": 48
+        }
+      },
+      {
+        "rule": "n_kg_ha <= 400.0",
+        "removed": 13,
+        "removed_by_crop": {
+          "RICE": 13
+        }
+      },
+      {
+        "rule": "p2o5_kg_ha <= 250.0",
+        "removed": 14,
+        "removed_by_crop": {
+          "RICE": 14
+        }
+      },
+      {
+        "rule": "k2o_kg_ha <= 250.0",
+        "removed": 5,
+        "removed_by_crop": {
+          "RICE": 5
+        }
+      }
+    ],
+    "rows_after": 15399,
+    "rows_after_by_crop": {
+      "RICE": 7777,
+      "WHEAT": 7622
+    },
+    "complex_grade_imputed_rows": 175
+  },
+  "leakage_probes": {
+    "lds_wheat_2018": {
+      "L-cropDurationDays": 0.347,
+      "I-q5512_lodgingPercent": -0.049,
+      "G-q5305_irrigTimes": 0.341
+    },
+    "lds_rice_2018": {
+      "I-q5512_lodgingPercent": 0.094,
+      "G-q5305_irrigTimes": 0.438
+    }
+  },
+  "features": {
+    "missing_after_cleaning": {
+      "n_kg_ha": 0,
+      "p2o5_kg_ha": 0,
+      "k2o_kg_ha": 0,
+      "sowing_day": 0,
+      "zn_applied": 0,
+      "irrigation_available": 0,
+      "fym_applied": 0,
+      "crop": 0,
+      "state": 0,
+      "soil_texture": 0,
+      "variety_type": 38,
+      "previous_crop": 0
+    },
+    "numeric_summary_by_crop": {
+      "RICE": {
+        "n_kg_ha": {
+          "count": 7777.0,
+          "mean": 110.58,
+          "std": 51.11,
+          "min": 0.0,
+          "1%": 0.0,
+          "50%": 111.99,
+          "99%": 249.08,
+          "max": 391.41
+        },
+        "p2o5_kg_ha": {
+          "count": 7777.0,
+          "mean": 49.81,
+          "std": 34.4,
+          "min": 0.0,
+          "1%": 0.0,
+          "50%": 50.79,
+          "99%": 159.44,
+          "max": 247.11
+        },
+        "k2o_kg_ha": {
+          "count": 7777.0,
+          "mean": 27.93,
+          "std": 36.3,
+          "min": 0.0,
+          "1%": 0.0,
+          "50%": 16.35,
+          "99%": 148.26,
+          "max": 248.59
+        },
+        "sowing_day": {
+          "count": 7777.0,
+          "mean": 75.01,
+          "std": 16.7,
+          "min": 7.0,
+          "1%": 40.0,
+          "50%": 76.0,
+          "99%": 118.24,
+          "max": 150.0
+        },
+        "yield_t_ha": {
+          "count": 7777.0,
+          "mean": 4.66,
+          "std": 1.51,
+          "min": 0.38,
+          "1%": 1.5,
+          "50%": 4.5,
+          "99%": 8.5,
+          "max": 9.5
+        }
+      },
+      "WHEAT": {
+        "n_kg_ha": {
+          "count": 7622.0,
+          "mean": 130.62,
+          "std": 37.14,
+          "min": 0.0,
+          "1%": 40.68,
+          "50%": 132.7,
+          "99%": 203.86,
+          "max": 298.7
+        },
+        "p2o5_kg_ha": {
+          "count": 7622.0,
+          "mean": 57.67,
+          "std": 21.34,
+          "min": 0.0,
+          "1%": 0.0,
+          "50%": 59.11,
+          "99%": 109.12,
+          "max": 213.13
+        },
+        "k2o_kg_ha": {
+          "count": 7622.0,
+          "mean": 19.42,
+          "std": 18.33,
+          "min": 0.0,
+          "1%": 0.0,
+          "50%": 20.02,
+          "99%": 65.24,
+          "max": 157.25
+        },
+        "sowing_day": {
+          "count": 7622.0,
+          "mean": 57.8,
+          "std": 12.22,
+          "min": 24.0,
+          "1%": 35.0,
+          "50%": 55.0,
+          "99%": 90.0,
+          "max": 116.0
+        },
+        "yield_t_ha": {
+          "count": 7622.0,
+          "mean": 2.99,
+          "std": 0.85,
+          "min": 0.44,
+          "1%": 1.2,
+          "50%": 3.0,
+          "99%": 5.33,
+          "max": 6.5
+        }
+      }
+    },
+    "spearman_with_yield_by_crop": {
+      "RICE": {
+        "n_kg_ha": 0.304,
+        "p2o5_kg_ha": 0.062,
+        "k2o_kg_ha": 0.047,
+        "sowing_day": -0.167
+      },
+      "WHEAT": {
+        "n_kg_ha": 0.25,
+        "p2o5_kg_ha": 0.213,
+        "k2o_kg_ha": 0.123,
+        "sowing_day": -0.417
+      }
+    },
+    "districts": 88
+  },
+  "processed_file": {
+    "path": "data\\processed\\lds_wheat_rice_2018.csv",
+    "md5": "b41094e485247f34ffcf9f38905082bf"
+  }
+}

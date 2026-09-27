@@ -1,5 +1,6 @@
 package com.agrioptima.exception;
 
+import com.agrioptima.ml.MlServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -94,6 +95,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
         return problem(HttpStatus.CONFLICT, "conflict", "Conflict",
                 "The request conflicts with existing data.");
+    }
+
+    /** ML service failures. The detail never contains the service URL or upstream error text. */
+    @ExceptionHandler(MlServiceException.class)
+    public ProblemDetail handleMlService(MlServiceException ex) {
+        log.warn("ML service failure ({}): {}", ex.kind(), ex.logDetail());
+        return switch (ex.kind()) {
+            case UNAVAILABLE -> problem(HttpStatus.SERVICE_UNAVAILABLE, "ml-service-unavailable",
+                    "ML service unavailable", ex.getMessage());
+            case TIMEOUT -> problem(HttpStatus.GATEWAY_TIMEOUT, "ml-service-timeout", "ML service timeout",
+                    ex.getMessage());
+            case ERROR_RESPONSE -> problem(HttpStatus.BAD_GATEWAY, "ml-service-error", "ML service error",
+                    ex.getMessage());
+            case INVALID_RESPONSE -> problem(HttpStatus.BAD_GATEWAY, "ml-service-invalid-response",
+                    "Invalid ML service response", ex.getMessage());
+        };
     }
 
     @ExceptionHandler(AuthenticationException.class)

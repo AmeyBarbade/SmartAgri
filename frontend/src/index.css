@@ -1,0 +1,74 @@
+@import '@fontsource-variable/inter';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #f6f6f3;
+  --color-surface: #ffffff;
+  --color-line: #e3e3de;
+  --color-line-strong: #cfcfc8;
+  --color-ink: #1d201b;
+  --color-ink-2: #3d413a;
+  --color-muted: #6b7068;
+  --color-faint: #8f948b;
+
+  --color-accent: #3f6b3a;
+  --color-accent-hover: #355b31;
+  --color-accent-soft: #eef3ec;
+  --color-accent-line: #b9cdb3;
+
+  --color-warn: #8a5a0f;
+  --color-warn-soft: #fbf5e8;
+  --color-warn-line: #ead7ae;
+
+  --color-danger: #9b3027;
+  --color-danger-soft: #fbefed;
+  --color-danger-line: #ecc7c2;
+
+  /* Chart series: one hue family, stepped by lightness */
+  --color-chart-1: #3f6b3a;
+  --color-chart-2: #8aa883;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Inputs share one height and focus style */
+.input {
+  height: 2.25rem;
+  width: 100%;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 6px;
+  background: var(--color-surface);
+  padding: 0 0.625rem;
+  font-size: 14px;
+  color: var(--color-ink);
+}
+.input:focus {
+  outline: 2px solid var(--color-accent-line);
+  outline-offset: 0;
+  border-color: var(--color-accent);
+}
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+.input:disabled {
+  background: var(--color-canvas);
+  color: var(--color-muted);
+}
