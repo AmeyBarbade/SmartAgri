@@ -61,6 +61,10 @@ st.markdown("""
     }
     .bag-card h2 { margin: 0 0 4px; color: #2D2D2D; font-size: 1.2rem; }
     .bag-card p  { margin: 2px 0; color: #555; font-size: .88rem; }
+    section[data-testid="stSidebar"] {
+        background-color: #F8FAFC !important;
+        border-right: 1px solid #E2E8F0 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -124,6 +128,17 @@ with tab_optimizer:
     gis_map_col, gis_stats_col = st.columns([2.0, 1.0])
 
     with gis_map_col:
+        col_map_title, col_map_cta = st.columns([1.5, 1.2])
+        with col_map_title:
+            st.markdown("##### 🗺️ Parcel Satellite Canvas")
+        with col_map_cta:
+            st.button(
+                "✏️ Trace Farm Boundary",
+                type="primary",
+                use_container_width=True,
+                help="Click the polygon tool on the map below to outline field vertices"
+            )
+
         # Build Folium map with Esri World Imagery tiles
         m = folium.Map(
             location=[st.session_state.get("lat_val", 19.75), st.session_state.get("lon_val", 75.71)],
