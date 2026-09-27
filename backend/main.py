@@ -1,9 +1,15 @@
-from fastapi import FastAPI
+"""
+FastAPI Server for SmartAgri
+Author: Amey Barbade
+"""
+
+from fastapi import FastAPI, Query
 from pydantic import BaseModel, Field
 from typing import Optional, Dict
 from engine.fusion import get_recommendation
+from engine.gis import fetch_isric_soilgrids, calculate_polygon_metrics
 
-app = FastAPI(title="Sustainable Fertilizer Usage Optimizer API")
+app = FastAPI(title="SmartAgri — Sustainable Fertilizer Usage Optimizer API")
 
 class SoilData(BaseModel):
     N: float = 0
@@ -42,3 +48,11 @@ def recommend_fertilizer(req: RecommendationRequest):
         previous_usage=req.previous_fertilizer_usage
     )
     return res
+
+@app.get("/soilgrids")
+def query_soilgrids(lat: float = Query(..., description="Latitude"), lon: float = Query(..., description="Longitude")):
+    """
+    Fetch satellite-derived soil properties (N, pH, Organic Carbon) from ISRIC SoilGrids
+    with failsafe fallback to Regional Vertisol simulation.
+    """
+    return fetch_isric_soilgrids(lat, lon)

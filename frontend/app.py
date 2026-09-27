@@ -2,15 +2,26 @@
 SmartAgri — Sustainable Fertilizer Usage Optimizer
 Frontend Dashboard (Streamlit)
 Author: Amey Barbade
+Phase 4: GIS Integration & Polygon Auto-Fill
 """
-import streamlit as st
-import requests
+import sys
 import json
+import requests
+import streamlit as st
 import plotly.graph_objects as go
 from pathlib import Path
 
+# Add project root to sys.path for backend engine imports
+ROOT_DIR = Path(__file__).parent.parent
+sys.path.append(str(ROOT_DIR))
+
+import folium
+from folium.plugins import Draw
+from streamlit_folium import st_folium
+from backend.engine.gis import calculate_polygon_metrics, fetch_isric_soilgrids
+
 API_URL = "http://127.0.0.1:8001/recommend"
-SEASONS_PATH = Path(__file__).parent.parent / "backend" / "config" / "mock_seasons.json"
+SEASONS_PATH = ROOT_DIR / "backend" / "config" / "mock_seasons.json"
 
 st.set_page_config(
     page_title="SmartAgri — Sustainable Fertilizer Optimizer",
@@ -19,7 +30,7 @@ st.set_page_config(
 )
 
 # ══════════════════════════════════════════════════════════════════════════
-# CUSTOM CSS — enterprise light theme
+# CUSTOM CSS — Enterprise light theme (#FDFBF7 / #F3EFE6)
 # ══════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
@@ -44,8 +55,14 @@ st.markdown("""
         border-radius: 10px; padding: 18px; text-align: center;
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
-    .bag-card h2 { margin: 0 0 4px; color: #2D2D2D; }
+    .bag-card h2 { margin: 0 0 4px; color: #2D2D2D; font-size: 1.2rem; }
     .bag-card p  { margin: 2px 0; color: #555; font-size: .88rem; }
+    .gis-panel {
+        background: #F3EFE6; border: 1px solid #DDD8CC;
+        border-radius: 10px; padding: 14px 18px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        margin-bottom: 12px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -56,7 +73,7 @@ st.markdown(
     "<h1 style='text-align:center; color:#2D2D2D;'>"
     "🌱 SmartAgri — Sustainable Fertilizer Optimizer</h1>"
     "<p style='text-align:center; font-size:1.05rem; color:#777;'>"
-    "PSAI01 &nbsp;·&nbsp; Hybrid STCR + ML Recommendation Engine</p>"
+    "PSAI01 &nbsp;·&nbsp; Hybrid STCR + ML Recommendation Engine &nbsp;·&nbsp; Phase 4 GIS Integration</p>"
     "<p class='author-badge'>Developed by <strong>Amey Barbade</strong></p>",
     unsafe_allow_html=True
 )
@@ -71,11 +88,126 @@ tab_optimizer, tab_tracking, tab_dealer, tab_settings = st.tabs([
     "⚙️ Settings & Profiles"
 ])
 
+# ── Session State Defaults for Auto-Fill ──
+if "land_size_val" not in st.session_state:
+    st.session_state["land_size_val"] = 2.0
+if "lat_val" not in st.session_state:
+    st.session_state["lat_val"] = 19.7500
+if "lon_val" not in st.session_state:
+    st.session_state["lon_val"] = 75.7100
+if "soil_n_val" not in st.session_state:
+    st.session_state["soil_n_val"] = 180.0
+if "soil_ph_val" not in st.session_state:
+    st.session_state["soil_ph_val"] = 7.2
+if "soil_oc_val" not in st.session_state:
+    st.session_state["soil_oc_val"] = 0.40
+if "polygon_detected" not in st.session_state:
+    st.session_state["polygon_detected"] = None
+if "auto_fill_applied" not in st.session_state:
+    st.session_state["auto_fill_applied"] = False
+if "auto_fill_source" not in st.session_state:
+    st.session_state["auto_fill_source"] = ""
+
 # ──────────────────────────────────────────────────────────────────────────
 # TAB 1 — Optimizer Dashboard
 # ──────────────────────────────────────────────────────────────────────────
 with tab_optimizer:
     st.divider()
+
+    # ── GIS & SATELLITE FIELD BOUNDARY SECTION ──
+    st.markdown("### 🛰️ Satellite Field Boundary & GIS Auto-Fill")
+    st.caption(
+        "Draw your parcel boundary directly on the high-resolution Esri satellite imagery below. "
+        "The system will compute equal-area acreage (EPSG:6933) and query the ISRIC SoilGrids REST API to auto-fill your Soil Health Card."
+    )
+
+    gis_map_col, gis_stats_col = st.columns([2.0, 1.0])
+
+    with gis_map_col:
+        # Build Folium map with Esri World Imagery tiles
+        m = folium.Map(
+            location=[19.75, 75.71],
+            zoom_start=7,
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            attr="Esri"
+        )
+        # Enable Leaflet Draw polygon tool
+        Draw(
+            export=False,
+            position="topleft",
+            draw_options={
+                "polyline": False,
+                "rectangle": True,
+                "circle": False,
+                "circlemarker": False,
+                "marker": False,
+                "polygon": True
+            }
+        ).add_to(m)
+
+        map_output = st_folium(
+            m,
+            height=370,
+            width=None,
+            use_container_width=True,
+            returned_objects=["last_active_drawing"],
+            key="satellite_map_folium"
+        )
+
+    # Detect polygon from drawing
+    drawing = map_output.get("last_active_drawing") if map_output else None
+    if drawing and isinstance(drawing, dict):
+        poly_metrics = calculate_polygon_metrics(drawing)
+        if poly_metrics:
+            st.session_state["polygon_detected"] = poly_metrics
+
+    with gis_stats_col:
+        st.markdown("#### 📐 Field Geometry")
+        poly = st.session_state.get("polygon_detected")
+
+        if poly:
+            st.metric("Detected Polygon Area", f"{poly['acres']} Acres")
+            st.markdown(f"**Centroid:** `{poly['lat']}° N, {poly['lon']}° E`")
+            st.caption(f"Area: {poly['area_sq_m']:,.1f} m² (Equal-Area EPSG:6933)")
+
+            if st.button("✨ Auto-Fill Soil Health Card from Satellite", type="primary", use_container_width=True):
+                with st.spinner("Pinging ISRIC SoilGrids API (0-5cm depth, 4s timeout)..."):
+                    soil_res = fetch_isric_soilgrids(poly["lat"], poly["lon"])
+
+                    # Inject into session state
+                    st.session_state["land_size_val"] = float(poly["acres"])
+                    st.session_state["lat_val"] = float(poly["lat"])
+                    st.session_state["lon_val"] = float(poly["lon"])
+                    st.session_state["soil_n_val"] = float(soil_res["N"])
+                    st.session_state["soil_ph_val"] = float(soil_res["pH"])
+                    st.session_state["soil_oc_val"] = float(soil_res["organic_carbon"])
+                    st.session_state["auto_fill_applied"] = True
+                    st.session_state["auto_fill_source"] = soil_res["source"]
+                    st.session_state["auto_fill_fallback"] = soil_res["is_fallback"]
+
+                    if soil_res["is_fallback"]:
+                        st.toast("⚠️ ISRIC API timed out (>4s); applied Regional Vertisol simulation.", icon="⚠️")
+                    else:
+                        st.toast("✅ Soil data retrieved from ISRIC SoilGrids v2.0!", icon="✅")
+                    st.rerun()
+
+            if st.session_state.get("auto_fill_applied"):
+                if st.session_state.get("auto_fill_fallback"):
+                    st.info(f"ℹ️ {st.session_state.get('auto_fill_source')}")
+                else:
+                    st.success(f"✅ {st.session_state.get('auto_fill_source')}")
+        else:
+            st.info(
+                "💡 **How to use:**\n\n"
+                "1. Click the **Polygon tool (⬡)** on the top-left toolbar of the satellite map.\n"
+                "2. Click vertices around your field on the map.\n"
+                "3. Click the first point to close the polygon.\n\n"
+                "Once closed, the acreage and satellite auto-fill button will activate."
+            )
+
+    st.divider()
+
+    # ── MAIN RECOMMENDATION DASHBOARD GRID ──
     input_col, spacer, result_col = st.columns([1.2, 0.1, 2])
 
     with input_col:
@@ -90,18 +222,25 @@ with tab_optimizer:
         }
         st.caption(status_map.get(crop_type, ""))
 
-        land_size = st.number_input("Land Size (Acres)", min_value=0.1, value=2.0, step=0.5)
+        land_size = st.number_input(
+            "Land Size (Acres)",
+            min_value=0.01,
+            step=0.5,
+            key="land_size_val"
+        )
         target_yield = st.number_input("Target Yield (Quintals/ha)", min_value=1.0, value=20.0, step=5.0)
 
-        st.markdown("##### 📍 Location (for weather)")
+        st.markdown("##### 📍 Location (for weather & soil)")
         loc_c1, loc_c2 = st.columns(2)
-        lat = loc_c1.number_input("Latitude", value=20.5937, format="%.4f")
-        lon = loc_c2.number_input("Longitude", value=78.9629, format="%.4f")
+        lat = loc_c1.number_input("Latitude", format="%.4f", key="lat_val")
+        lon = loc_c2.number_input("Longitude", format="%.4f", key="lon_val")
 
         with st.expander("🧪 Soil Health Card (12 Parameters)", expanded=False):
+            if st.session_state.get("auto_fill_applied"):
+                st.caption(f"📍 Auto-populated via {st.session_state.get('auto_fill_source')}")
             shc1, shc2 = st.columns(2)
             with shc1:
-                n_val  = st.number_input("Nitrogen (N) kg/ha",  value=180.0)
+                n_val  = st.number_input("Nitrogen (N) kg/ha",  key="soil_n_val")
                 p_val  = st.number_input("Phosphorus (P) kg/ha", value=15.0)
                 k_val  = st.number_input("Potassium (K) kg/ha", value=200.0)
                 s_val  = st.number_input("Sulphur (S) ppm",     value=8.0)
@@ -111,9 +250,9 @@ with tab_optimizer:
                 cu_val = st.number_input("Copper (Cu) ppm",       value=0.1)
                 mn_val = st.number_input("Manganese (Mn) ppm",    value=1.0)
                 b_val  = st.number_input("Boron (B) ppm",         value=0.2)
-                ph_val = st.number_input("pH",                    value=7.2)
+                ph_val = st.number_input("pH",                    key="soil_ph_val")
                 ec_val = st.number_input("EC (dS/m)",             value=0.6)
-                oc_val = st.number_input("Organic Carbon (%)",    value=0.4)
+                oc_val = st.number_input("Organic Carbon (%)",    key="soil_oc_val")
 
         with st.expander("💰 Previous Fertilizer Usage (bags)", expanded=False):
             st.caption("Enter number of bags you previously purchased.")
@@ -124,7 +263,7 @@ with tab_optimizer:
 
         run = st.button("🚀 Generate Recommendation", type="primary", use_container_width=True)
 
-    # ── RESULTS ──
+    # ── RESULTS PANEL ──
     with result_col:
         if run:
             payload = {
@@ -141,18 +280,18 @@ with tab_optimizer:
             }
 
             try:
-                with st.spinner("Analyzing soil data, querying weather, running engine…"):
+                with st.spinner("Analyzing soil data, querying weather, running STCR + ML engine…"):
                     response = requests.post(API_URL, json=payload, timeout=15)
                     response.raise_for_status()
                     res = response.json()
 
-                # 1. Confidence
+                # 1. Confidence Flag
                 if res["confidence"] == "stcr_grounded":
                     st.success("✅ Recommendation grounded in verified ICAR STCR equations.")
                 else:
                     st.warning("⚠️ STCR coefficients unavailable for this crop. Displaying ML-estimated baseline.")
 
-                # 2. Weather
+                # 2. Weather Flag
                 if res["weather_flag"]:
                     st.error(f"🌧️ Weather Alert: {res['weather_reason']}")
                 else:
@@ -160,7 +299,7 @@ with tab_optimizer:
 
                 st.divider()
 
-                # 3. COMMERCIAL BAG RECOMMENDATION (the new hero section)
+                # 3. Commercial Bags (Hero Section)
                 st.subheader("🛒 What to Buy — Commercial Fertilizer Bags")
                 bags = res.get("commercial_bags", {})
                 bc1, bc2, bc3 = st.columns(3)
@@ -292,7 +431,7 @@ with tab_optimizer:
         else:
             st.markdown(
                 "<div style='text-align:center; padding:80px 0; color:#999;'>"
-                "<h3>👈 Fill in your crop and soil data, then click "
+                "<h3>👈 Draw your parcel above or fill in your data, then click "
                 "<em>Generate Recommendation</em></h3></div>",
                 unsafe_allow_html=True)
 
@@ -328,15 +467,11 @@ with tab_tracking:
             plot_bgcolor="#FDFBF7", paper_bgcolor="#FDFBF7",
             font=dict(color="#2D2D2D"),
             xaxis=dict(title="Season", gridcolor="#DDD8CC"),
-            yaxis=dict(title="Organic Carbon (%)", gridcolor="#DDD8CC",
-                       side="left"),
-            yaxis2=dict(title="Nitrogen (kg/ha)", overlaying="y",
-                        side="right", gridcolor="#DDD8CC"),
-            legend=dict(orientation="h", yanchor="bottom", y=1.05,
-                        xanchor="center", x=0.5))
+            yaxis=dict(title="Organic Carbon (%)", gridcolor="#DDD8CC", side="left"),
+            yaxis2=dict(title="Nitrogen (kg/ha)", overlaying="y", side="right", gridcolor="#DDD8CC"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5))
         st.plotly_chart(fig, use_container_width=True)
 
-        # Season detail table
         st.markdown("#### Season Details")
         for s in seasons:
             with st.expander(f"{s['season']} — {s['crop']}", expanded=False):
@@ -371,7 +506,7 @@ with tab_dealer:
         "<p style='font-size:1.1rem;'>Find the nearest fertilizer dealers and "
         "agri-input shops based on your location.</p><br>"
         "<span style='background:#EAE5D9; padding:8px 20px; border-radius:6px; "
-        "font-weight:600; color:#555;'>Coming in Phase 4</span></div>",
+        "font-weight:600; color:#555;'>Coming in Phase 5</span></div>",
         unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -385,7 +520,7 @@ with tab_settings:
         "<p style='font-size:1.1rem;'>Manage farm profiles, saved soil reports, "
         "and application preferences.</p><br>"
         "<span style='background:#EAE5D9; padding:8px 20px; border-radius:6px; "
-        "font-weight:600; color:#555;'>Coming in Phase 4</span></div>",
+        "font-weight:600; color:#555;'>Coming in Phase 5</span></div>",
         unsafe_allow_html=True)
 
 # ── Footer ──
@@ -393,5 +528,5 @@ st.markdown(
     "<hr style='margin-top:40px;'>"
     "<p style='text-align:center; color:#AAA; font-size:.78rem;'>"
     "SmartAgri PSAI01 &nbsp;·&nbsp; Built by Amey Barbade &nbsp;·&nbsp; "
-    "Hybrid STCR + ML Engine &nbsp;·&nbsp; Phase 3</p>",
+    "Hybrid STCR + ML Engine &nbsp;·&nbsp; Phase 4 GIS Integration</p>",
     unsafe_allow_html=True)

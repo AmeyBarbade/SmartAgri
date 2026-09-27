@@ -10,3 +10,7 @@ pyyaml
 streamlit
 joblib
 plotly
+streamlit-folium
+folium
+shapely
+pyproj
