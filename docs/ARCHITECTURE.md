@@ -158,9 +158,9 @@ erDiagram
 |---|---|---|
 | `users` | full_name, email, password_hash, role | UNIQUE(email) |
 | `farms` | user_id, name, location_name, latitude, longitude | FK users; IDX(user_id) |
-| `fields` | farm_id, name, area_ha, irrigation_type, soil_type, crop_id, growth_stage_code, season, sowing_date, previous_crop | FK farms, crops; CHECK area_ha > 0 |
-| `crops` | code, name, base_n, base_p2o5, base_k2o, typical_yield_t_ha, source_ref | UNIQUE(code) |
-| `crop_growth_stages` | crop_id, code, name, seq, days_from_sowing, n_split_pct, p_split_pct, k_split_pct | UNIQUE(crop_id, code) |
+| `fields` | farm_id, name, area_ha, irrigation_type, soil_type, crop_id, growth_stage_id, season, sowing_date, previous_crop | FK farms, crops, crop_growth_stages; CHECK area_ha > 0 |
+| `crops` | code, name, description (+ base_n, base_p2o5, base_k2o, source_ref added in M4) | UNIQUE(code) |
+| `crop_growth_stages` | crop_id, code, name, seq, description (+ timing / N-P-K split columns added in M4) | UNIQUE(crop_id, code), UNIQUE(crop_id, seq) |
 | `soil_records` | field_id, sample_date, nitrogen, phosphorus, potassium, ph, organic_carbon, moisture | FK fields; IDX(field_id, sample_date) |
 | `fertilizers` | code, name, n_pct, p2o5_pct, k2o_pct, price_per_kg, bag_kg, source_ref, active | UNIQUE(code); CHECK pct 0..100 |
 | `fertilizer_applications` | field_id, fertilizer_id, applied_on, quantity_kg, stage_code | FK; IDX(field_id, applied_on) |
