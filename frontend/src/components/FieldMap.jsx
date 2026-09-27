@@ -42,12 +42,6 @@ function calculateCentroid(coords) {
   }
 }
 
-const PRESETS = [
-  { name: 'Patna (Bihar Rice)', lat: 25.5941, lon: 85.1376 },
-  { name: 'Ludhiana (Punjab Wheat)', lat: 30.9010, lon: 75.8573 },
-  { name: 'Akola (Vidarbha Black Soil)', lat: 20.7002, lon: 77.0082 },
-  { name: 'Guntur (Andhra Delta)', lat: 16.3067, lon: 80.4365 },
-]
 
 export default function FieldMap({ field, farm, onSaveBoundary }) {
   const mapContainerRef = useRef(null)
@@ -297,13 +291,6 @@ export default function FieldMap({ field, farm, onSaveBoundary }) {
     }
   }
 
-  const jumpTo = (lat, lon) => {
-    const map = mapInstanceRef.current
-    if (map) {
-      map.flyTo([lat, lon], 16, { duration: 1.5 })
-    }
-  }
-
   return (
     <Panel className="overflow-hidden mb-6">
       {/* Map Control Bar */}
@@ -333,9 +320,9 @@ export default function FieldMap({ field, farm, onSaveBoundary }) {
             <button
               type="button"
               onClick={handleStartDrawing}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-800 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-md ring-2 ring-emerald-500/25 transition-all transform active:scale-95"
             >
-              <Crosshair className="size-3.5" />
+              <Crosshair className="size-4" />
               {existingCoords ? 'Trace Farm Boundary (Redraw)' : 'Trace Farm Boundary'}
             </button>
           ) : (
@@ -357,21 +344,6 @@ export default function FieldMap({ field, farm, onSaveBoundary }) {
             </>
           )}
         </div>
-      </div>
-
-      {/* Preset Quick Navigation Bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-line bg-surface px-5 py-2 text-xs text-muted">
-        <span className="font-medium text-ink-2">Quick Jump:</span>
-        {PRESETS.map((p) => (
-          <button
-            key={p.name}
-            type="button"
-            onClick={() => jumpTo(p.lat, p.lon)}
-            className="rounded border border-line px-2 py-1 text-[11px] hover:bg-canvas hover:text-ink transition-colors"
-          >
-            {p.name}
-          </button>
-        ))}
       </div>
 
       {/* Leaflet Map Canvas */}

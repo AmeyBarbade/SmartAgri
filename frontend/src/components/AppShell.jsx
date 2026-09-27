@@ -11,12 +11,15 @@ const NAV = [
 
 export function Logo() {
   return (
-    <span className="inline-flex items-center gap-2 font-semibold tracking-tight text-ink">
-      <span className="grid size-6 place-items-center rounded bg-accent text-white">
-        <Sprout className="size-4" aria-hidden />
+    <div className="inline-flex items-center gap-2.5 tracking-tight text-ink">
+      <span className="grid size-7 place-items-center rounded-lg bg-emerald-700 text-white shadow-xs">
+        <Sprout className="size-4.5" aria-hidden />
       </span>
-      AgriOptima
-    </span>
+      <div className="flex flex-col">
+        <span className="font-bold text-sm leading-tight text-slate-900">AgriOptima</span>
+        <span className="text-[10px] text-slate-500 font-medium leading-none">by Amey Barbade</span>
+      </div>
+    </div>
   )
 }
 
@@ -39,7 +42,7 @@ export default function AppShell() {
         </div>
       </header>
       <div className="flex flex-1 flex-col md:flex-row">
-        <nav className="border-b border-slate-200/90 bg-[#f8fafc] md:w-56 md:shrink-0 md:border-r md:border-b-0 md:border-slate-200/90 shadow-[1px_0_6px_rgba(0,0,0,0.03)]">
+        <nav className="flex flex-col justify-between border-b border-slate-200/90 bg-[#f8fafc] md:w-56 md:shrink-0 md:border-r md:border-b-0 md:border-slate-200/90 shadow-[1px_0_6px_rgba(0,0,0,0.03)]">
           <ul className="flex gap-1 overflow-x-auto px-3 py-2.5 md:flex-col md:gap-1.5 md:py-4">
             {NAV.map(({ to, label, icon: Icon, end }) => (
               <li key={to}>
@@ -60,6 +63,11 @@ export default function AppShell() {
               </li>
             ))}
           </ul>
+          <div className="hidden border-t border-slate-200/80 p-4 md:block bg-slate-100/50">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">PSAI01 · AgriOptima</p>
+            <p className="text-xs text-slate-600 mt-1">Lead Developer:</p>
+            <p className="text-xs font-semibold text-emerald-800">Amey Barbade</p>
+          </div>
         </nav>
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl">
@@ -67,6 +75,13 @@ export default function AppShell() {
           </div>
         </main>
       </div>
+      <footer className="border-t border-slate-200/80 bg-white py-3 px-6 text-center text-xs text-slate-500">
+        <p>
+          PSAI01: Sustainable Fertilizer Usage Optimizer &nbsp;·&nbsp;
+          Developed by <strong className="text-slate-800">Amey Barbade</strong> &nbsp;·&nbsp;
+          ICAR STCR & IPNS Agronomic Engine
+        </p>
+      </footer>
     </div>
   )
 }

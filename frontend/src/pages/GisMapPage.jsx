@@ -8,12 +8,6 @@ import { useAsync } from '../useAsync'
 import { Button, ErrorNotice, Loading, PageHeader, Panel, Stat } from '../components/ui'
 import { fmt, titleCase } from '../format'
 
-const PRESETS = [
-  { name: 'Patna (Bihar Rice)', lat: 25.5941, lon: 85.1376 },
-  { name: 'Ludhiana (Punjab Wheat)', lat: 30.9010, lon: 75.8573 },
-  { name: 'Akola (Vidarbha Black Soil)', lat: 20.7002, lon: 77.0082 },
-  { name: 'Guntur (Andhra Delta)', lat: 16.3067, lon: 80.4365 },
-]
 
 export default function GisMapPage() {
   const { data, error, loading, reload } = useAsync(loadOverview, [])
@@ -190,12 +184,6 @@ export default function GisMapPage() {
     mapInstanceRef.current.flyTo([lat, lon], 17, { duration: 1.5 })
   }
 
-  const jumpTo = (lat, lon) => {
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([lat, lon], 15, { duration: 1.5 })
-    }
-  }
-
   if (loading && !data) return <Loading label="Loading GIS field data…" />
   if (error) return <ErrorNotice error={error} onRetry={reload} />
 
@@ -205,10 +193,20 @@ export default function GisMapPage() {
         title="GIS Satellite Farm & Field Overview"
         meta="High-resolution satellite view of all parcels, GIS boundaries, and crop monitoring."
         actions={
-          <Button variant="secondary" onClick={toggleLayer}>
-            <Layers className="size-4" />
-            {satelliteMode ? 'Esri Satellite' : 'OpenStreetMap'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" onClick={toggleLayer}>
+              <Layers className="size-4" />
+              {satelliteMode ? 'Esri Satellite' : 'OpenStreetMap'}
+            </Button>
+            <Link
+              to={selectedFieldId ? `/fields/${selectedFieldId}` : (allFields.length > 0 ? `/fields/${allFields[0].id}` : '/farms')}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-5 py-2 text-sm font-bold text-white shadow-md transition-all transform active:scale-95 ring-2 ring-emerald-500/25"
+            >
+              <Crosshair className="size-4" />
+              Trace Farm Boundary
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
         }
       />
 
@@ -247,37 +245,22 @@ export default function GisMapPage() {
             </select>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-            <span className="font-medium text-ink-2">Quick Jump:</span>
-            {PRESETS.map((p) => (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => jumpTo(p.lat, p.lon)}
-                className="rounded border border-line bg-surface px-2 py-1 text-[11px] hover:bg-canvas hover:text-ink transition-colors"
-              >
-                {p.name}
-              </button>
-            ))}
+          {/* Primary Top-Right CTA Aligned with Map Top Edge */}
+          <div className="flex items-center gap-2">
+            <Link
+              to={selectedFieldId ? `/fields/${selectedFieldId}` : (allFields.length > 0 ? `/fields/${allFields[0].id}` : '/farms')}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all transform active:scale-95 ring-2 ring-emerald-500/25 shrink-0"
+            >
+              <Crosshair className="size-4" />
+              <span>Trace Farm Boundary</span>
+              <ArrowRight className="size-4" />
+            </Link>
           </div>
         </div>
 
-        {/* Map Canvas with Floating Action Button */}
+        {/* Map Canvas */}
         <div className="relative">
           <div ref={mapContainerRef} className="h-[480px] w-full z-0" />
-
-          {selectedFieldId && (
-            <div className="absolute bottom-5 right-5 z-[1000]">
-              <Link
-                to={`/fields/${selectedFieldId}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-xl ring-2 ring-white/90 hover:bg-emerald-800 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <Crosshair className="size-4" />
-                Trace Farm Boundary
-                <ArrowRight className="size-4" />
-              </Link>
-            </div>
-          )}
         </div>
 
         {/* Elevated Primary Action Bar */}
@@ -312,37 +295,26 @@ export default function GisMapPage() {
                   <div className="flex items-center gap-3">
                     <Link
                       to={`/fields/${sf.id}/sustainability`}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 transition-colors"
                     >
                       📈 Multi-Season Dashboard
                     </Link>
                     <Link
                       to={`/fields/${sf.id}`}
-                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-800 transition-all transform active:scale-98"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
                     >
-                      <Crosshair className="size-4" />
-                      Trace Farm Boundary
-                      <ArrowRight className="size-4" />
+                      Open Field Details →
                     </Link>
                   </div>
                 </div>
               )
             })()
           ) : (
-            <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-600">
+            <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <Crosshair className="size-4 text-emerald-700" />
-                <span>Select any parcel from the dropdown above to focus and launch GIS polygon tracing.</span>
+                <span>Select any parcel from the dropdown above to focus on the high-resolution satellite canvas.</span>
               </div>
-              {allFields.length > 0 && (
-                <Link
-                  to={`/fields/${allFields[0].id}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2 text-sm font-bold text-white shadow-md hover:bg-emerald-800 transition-all"
-                >
-                  <Crosshair className="size-4" />
-                  Trace Farm Boundary
-                </Link>
-              )}
             </div>
           )}
         </div>
