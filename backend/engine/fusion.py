@@ -92,11 +92,37 @@ def get_recommendation(
     # 5. Cost
     cost_comp = calculate_cost(scaled_doses, previous_usage)
     
+    # 6. Explainability Chart Data (Target vs Actual)
+    # Using typical generic targets for N/P/K and IDEAL_MICRO for Zn/S for visualization
+    explainability = {
+        "N": {"actual": soil_data.get("N", 0), "target": 280.0},
+        "P": {"actual": soil_data.get("P", 0), "target": 22.0},
+        "K": {"actual": soil_data.get("K", 0), "target": 140.0},
+        "Zn": {"actual": soil_data.get("Zn", 0), "target": IDEAL_MICRO["Zn"]},
+        "S": {"actual": soil_data.get("S", 0), "target": IDEAL_MICRO["S"]}
+    }
+
+    # 7. Organic Blending / IPNS (Replace ~25% N with FYM/Vermicompost)
+    n_dose = scaled_doses.get("N", 0)
+    ipns_alternative = None
+    if n_dose > 0:
+        chemical_n = round(n_dose * 0.75, 2)
+        organic_n = n_dose - chemical_n
+        # Assuming FYM has ~0.5% N, so for every 1 kg N, we need 200 kg FYM
+        fym_qty = round(organic_n * 200, 2)
+        ipns_alternative = {
+            "chemical_n_kg": chemical_n,
+            "fym_vermicompost_kg": fym_qty,
+            "note": f"Replace 25% of chemical Nitrogen with {fym_qty} kg of Farm Yard Manure or Vermicompost."
+        }
+
     return {
         "nutrient_shortfall": {**scaled_doses, **micro_shortfall},
         "application_schedule": schedule,
         "weather_flag": weather["heavy_rain_warning"],
         "weather_reason": weather["warning_reason"],
         "cost_comparison": cost_comp,
-        "confidence": confidence
+        "confidence": confidence,
+        "explainability": explainability,
+        "ipns_alternative": ipns_alternative
     }
