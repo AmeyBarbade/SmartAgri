@@ -2,7 +2,7 @@
 
 > **Project ID:** PSAI01  
 > **Title:** Sustainable Fertilizer Usage Optimizer for Higher Yield  
-> **Authors:** Amey Barbade & Lovesh  
+> **Platform:** AgriOptima Hybrid ICAR-STCR & IPNS Architecture  
 
 ---
 

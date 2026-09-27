@@ -15,10 +15,7 @@ export function Logo() {
       <span className="grid size-7 place-items-center rounded-lg bg-emerald-700 text-white shadow-xs">
         <Sprout className="size-4.5" aria-hidden />
       </span>
-      <div className="flex flex-col">
-        <span className="font-bold text-sm leading-tight text-slate-900">AgriOptima</span>
-        <span className="text-[10px] text-slate-500 font-medium leading-none">by Amey Barbade</span>
-      </div>
+      <span className="font-bold text-base leading-tight text-slate-900">AgriOptima</span>
     </div>
   )
 }
@@ -65,8 +62,7 @@ export default function AppShell() {
           </ul>
           <div className="hidden border-t border-slate-200/80 p-4 md:block bg-slate-100/50">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">PSAI01 · AgriOptima</p>
-            <p className="text-xs text-slate-600 mt-1">Lead Developer:</p>
-            <p className="text-xs font-semibold text-emerald-800">Amey Barbade</p>
+            <p className="text-xs text-slate-500 mt-0.5">Sustainable Fertilizer Optimizer</p>
           </div>
         </nav>
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 lg:px-10">
@@ -78,7 +74,6 @@ export default function AppShell() {
       <footer className="border-t border-slate-200/80 bg-white py-3 px-6 text-center text-xs text-slate-500">
         <p>
           PSAI01: Sustainable Fertilizer Usage Optimizer &nbsp;·&nbsp;
-          Developed by <strong className="text-slate-800">Amey Barbade</strong> &nbsp;·&nbsp;
           ICAR STCR & IPNS Agronomic Engine
         </p>
       </footer>
