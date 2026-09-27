@@ -1,0 +1,17 @@
+# Zero-setup local development: file-based H2 in MySQL compatibility mode.
+# Data persists in backend/data/ (git-ignored). Delete that folder to reset.
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/agrioptima-dev;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  jwt:
+    # DEV ONLY - never use this key outside local development.
+    secret: ${JWT_SECRET:ZGV2LW9ubHktYWdyaW9wdGltYS1qd3Qtc2VjcmV0LWtleS1ub3QtZm9yLXByb2R1Y3Rpb24tdXNl}
